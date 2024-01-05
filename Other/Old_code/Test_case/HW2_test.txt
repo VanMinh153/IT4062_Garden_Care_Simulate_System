@@ -1,0 +1,20 @@
+./resolver 192.168.0.127
+./resolver 10.0.0.63
+./resolver 255.0.0.0
+./resolver 1...
+./resolver 1.2.3
+./resolver 1.2.3.
+./resolver .1.2.3
+./resolver 125.235.4.59
+./resolver 1.1.1.1
+./resolver dns.google
+./resolver hust.edu.vn
+./resolver soict.hust.edu.vn
+./resolver facebook.vn
+./resolver dns.vnvnkk
+./resolver dns.google
+./resolver hust.edu.vn
+./resolver soict.hust.edu.vn
+./resolver facebook.vn
+./resolver dns.vnvnkk
+

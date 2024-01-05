@@ -1,0 +1,23 @@
+1 1001
+2 2001
+3 3001
+4 4001
+1 1002
+2 2002
+3 3002
+4 4002
+1 1003
+2 2003
+3 3003
+4 4004
+
+#
+<garden_id>
+<type_of_device> <device_id>
+<type_of_device> <device_id>
+<type_of_device> <device_id>
+
+1: sensor
+2: watering machine
+3: npk machine
+4: lamp

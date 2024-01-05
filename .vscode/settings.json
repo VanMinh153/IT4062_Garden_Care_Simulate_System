@@ -1,0 +1,19 @@
+{
+  "cSpell.words": [
+    "connfd",
+    "conninfo",
+    "listenfd",
+    "OVERLENGTH"
+  ],
+  "files.associations": {
+    "stdlib.h": "c",
+    "bit": "c",
+    "cmath": "c",
+    "compare": "c",
+    "concepts": "c",
+    "type_traits": "c",
+    "limits": "c",
+    "*.tcc": "c",
+    "typeinfo": "c"
+  }
+}

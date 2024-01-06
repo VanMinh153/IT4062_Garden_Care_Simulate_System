@@ -11,9 +11,10 @@ int watering_fd[];
 int fertilizing_fd[];
 int lamp_fd[];
 
-//--------------------------------------
-#0 sensor test-case 1
-#1 sensor_fd[0]
+***
+//----------------------------------------------------------------
+#0 test-case 1 // check sensor 
+#1 SENSOR 0
 
 // check invalid command
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
@@ -45,7 +46,7 @@ LOGIN 18080
 
 // logged in state
 SSID sensor_1989
-> 180
+> 121
 PASSWD 18080 19090
 > 120
 GET
@@ -57,6 +58,61 @@ GET
 UPDATE
 > 400
 GET
+> 151 90 300 300 300 1 90 40 300 300 300
+WRITE 80 500 500 500
+> 401
+GET
+> 151 80 500 500 500 1 90 40 300 300 300
+//
+RESET 19090
+> 190
+
+//----------------------------------------------------------------
+#0 test-case 2 // check watering machine
+#1 WATERING 0
+
+// check invalid command
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+> 301
+LOGIN
+> 302
+LOGIN 18080 OK!
+> 302
+
+// check command with incorrect password
+LOGIN 111
+> 201
+PASSWD 111 19090
+> 201
+RESET 111
+> 201
+
+// not logged in state
+SSID watering_1956
+> 200
+SET 13
+> 200
+SET_T 12:30 20:30
+GET
+> 200
+LOGIN 18080
+> 110
+
+// logged in, not linked state
+SSID sensor_1989
+> 121
+PASSWD 18080 19090
+> 120
+GET
+> 150 ...
+SET 8
+> 172
+GET
+> 151 8 ...
+SET 
+UPDATE
+> 400
+GET
 11 > 151 90 300 300 300 1 90 40 300 300 300
 WRITE 80 500 500 500
 > 401
@@ -65,7 +121,3 @@ GET
 //
 RESET 19090
 > 190
-
-//--------------------------------------
-#0 sensor test-case 2
-#1 sensor_fd[0]

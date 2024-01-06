@@ -45,7 +45,7 @@ struct connection_t {
   int id;
   char SSID[SSID_LEN];
   unsigned int ip;
-  unsigned short int port;
+  unsigned int port;
   int connfd;
   int connCtrl_idx;
   bool hasLogin;

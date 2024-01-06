@@ -23,6 +23,7 @@ char connCtrl[CONNECTION_MAX];
 connection_t conninfo[CONNECTION_MAX];
 unsigned int numConnect = 0; 
 sensor_t sensor;
+sensor_t default_specs;
 
 void* handle_thread(void* connfd);
 int handle_msg(char* msg, connection_t* connection);
@@ -41,6 +42,7 @@ int main(int argc, char** argv) {
   memset(connCtrl, 0, CONNECTION_MAX);
   memset(conninfo, 0, CONNECTION_MAX*sizeof(connection_t) );
   memset(&sensor, 0, sizeof(sensor_t) );
+  memset(&default_specs, 0, sizeof(sensor_t) );
   memset(&server, 0, sizeof(server) );
   memset(recv_msg, 0, MSG_SIZE);
   memset(recv_buffer, 0, MSG_SIZE);

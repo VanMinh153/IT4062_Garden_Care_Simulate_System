@@ -15,21 +15,23 @@
 
 #define LOGIN_SUCCESS "110"
 #define PASSWORD_CHANGE_SUCCESS "120"
-#define RUN_SUCCESS "130"
-#define STOP_SUCCESS "140"
-#define RUNNING_STATUS "150"
-#define STOP_STATUS "151"
-#define LINK_SUCCESS "160"
-#define SET_TIMER_SUCCESS "170"
+#define SSID_CHANGE_SUCCESS "121"
+#define LINK_SUCCESS "130"
+#define RUN_SUCCESS "140"
+#define STOP_SUCCESS "141"
+#define DEFAULT "150"
+#define MODIFIED "151"
+#define ADD_TIMER_SUCCESS "160"
+#define REMOVE_TIMER_SUCCESS "161"
 #define SET_SENSOR_SUCCESS "171"
 #define SET_WATERING_SUCCESS "172"
 #define SET_FERTILIZING_SUCCESS "173"
 #define SET_LAMP_SUCCESS "174"
-#define SSID_CHANGE_SUCCESS "180"
 #define RESET_TO_DEFAULT "190"
 
 #define NOT_LOGGED_IN "200"
 #define PASSWORD_INCORRECT "201"
+#define NOT_LINKED "202"
 
 #define MSG_OVERLENGTH "300"
 #define UNKNOWN_COMMAND "301"
@@ -50,24 +52,24 @@ LOGIN <password>
 > 100 // LOGGED_IN
 > 201 // PASSWORD_INCORRECT
 SSID <new_ssid>
-> 180 // SSID_CHANGE_SUCCESS
+> 121 // SSID_CHANGE_SUCCESS
 > 200 // NOT_LOGGED_IN
 PASSWD <old_password> <new_password>
 > 120 // PASSWORD_CHANGE_SUCCESS
 > 201 // PASSWORD_INCORRECT
 // RUN and STOP not use for sensor
 RUN
-> 130 // RUN_SUCCESS
+> 140 // RUN_SUCCESS
 > 200 // NOT_LOGGED_IN
 STOP
-> 140 // STOP_SUCCESS
+> 141 // STOP_SUCCESS
 > 200 // NOT_LOGGED_IN
 GET
 > 150 // DEFAULT
-> 151 // INITIATED
-> 251 // NOT_INITIATED
+> 151 // MODIFIED
+> 202 // NOT_LINKED
 LINK <ip_address> <password>
-> 160 // LINK_SUCCESS
+> 130 // LINK_SUCCESS
 RESET <password>
 > 190 // RESET_TO_DEFAULT
 > 201 // PASSWORD_INCORRECT
@@ -78,7 +80,7 @@ GET
 > 150 <humidity> <nitrogen> <phosphorus> <potassium> <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
 // DEFAULT
 > 151 <humidity> <nitrogen> <phosphorus> <potassium> <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
-// INITIATED
+// MODIFIED
 SET <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
 > 171 // SET_SENSOR_SUCCESS
 // simulation command
@@ -99,17 +101,37 @@ WRITE <humidity> <nitrogen> <phosphorus> <potassium>
 // Watering machine's command
 SET <water_mount>
 > 172 // SET_WATERING_SUCCESS
-SET <TIME_START> <TIME_END>
-> 175 // SET_TIMER_SUCCESS
+ADD_T <TIME>
+> 160 // ADD_TIMER_SUCCESS
+> 260 // INVALID_TIME
+> 261 // MAXIMUM_TIMER
+REMOVE_T <TIME>
+> 161 // REMOVE_TIMER_SUCCESS
+> 260 // INVALID_TIME
+> 262 // NOT_FOUND
 
 //--------------------------------------
 // Fertilizing machine's command
 SET <N_mount> <P_mount> <K_mount> <water_mount>
 > 173 // SET_FERTILIZING_SUCCESS
+ADD_T <TIME>
+> 160 // ADD_TIMER_SUCCESS
+> 260 // INVALID_TIME
+> 261 // MAXIMUM_TIMER
+REMOVE_T <TIME>
+> 161 // REMOVE_TIMER_SUCCESS
+> 260 // INVALID_TIME
+> 262 // NOT_FOUND
 
 //--------------------------------------
 // Lamp's command
 SET <power>
 > 174 // SET_LAMP_SUCCESS
-SET <TIME_START> <TIME_END>
-> 175 // SET_TIMER_SUCCESS
+ADD_T <TIME_START> <TIME_END> ?<power>
+> 160 // ADD_TIMER_SUCCESS
+> 260 // INVALID_TIME
+> 261 // MAXIMUM_TIMER
+REMOVE_T <TIME_START> <TIME_END> ?<power>
+> 161 // REMOVE_TIMER_SUCCESS
+> 260 // INVALID_TIME
+> 262 // NOT_FOUND

@@ -1,5 +1,6 @@
 {
   "cSpell.words": [
+    "abcdefghijk",
     "connfd",
     "conninfo",
     "HMAX",
@@ -19,6 +20,7 @@
     "type_traits": "c",
     "limits": "c",
     "*.tcc": "c",
-    "typeinfo": "c"
+    "typeinfo": "c",
+    "types.h": "c"
   }
 }

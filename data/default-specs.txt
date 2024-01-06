@@ -1,0 +1,56 @@
+# SENSOR
+// char ssid[SSID_LEN + 1];
+// char password[PASSWORD_LEN + 1];
+// char status;
+0
+// unsigned int RESPONSE_TIME;
+1
+// int HMAX;
+95
+// int HMIN;
+45
+// unsigned int NMIN;
+850
+// unsigned int PMIN;
+850
+// unsigned int KMIN;
+850
+
+# WATERING
+// char ssid[SSID_LEN + 1];
+// char password[PASSWORD_LEN + 1];
+// char status;
+0
+// unsigned int water_mount;
+15
+// char timer[10][4];
+0530
+1730
+
+# FERTILIZING
+// char ssid[SSID_LEN + 1];
+// char password[PASSWORD_LEN + 1];
+// char status;
+0
+// unsigned int N_mount; // 0-1000 gram/lit
+200
+// unsigned int P_mount; // 0-1000 gram/lit
+200
+// unsigned int K_mount; // 0-1000 gram/lit
+200
+// unsigned int water_mount;  // 0-100 liter
+15
+// char timer[10][4];
+0515
+
+# LAMP
+// char ssid[SSID_LEN + 1];
+// char password[PASSWORD_LEN + 1];
+// char status;
+0
+// unsigned int power; // 5-200 watt
+150
+// char timer[10][11];
+18302030000
+21302330050
+01300330050

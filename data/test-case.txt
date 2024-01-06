@@ -1,41 +1,17 @@
 ./sensor Sensor 18080
-./watering Watering_MC 28080
-./fertilizing Fertilizing_MC 38080
+./watering Watering_Machine 28080
+./fertilizing Fertilizing_Machine 38080
 ./lamp Lamp 48080
 ./client
-// Port 48048
-
-// test case with 1 device of each type
-int sensor_fd[];
-int watering_fd[];
-int fertilizing_fd[];
-int lamp_fd[];
+Port 48048
 
 ***
 //----------------------------------------------------------------
-#0 test-case 1 // check sensor 
+#0 test-case-1 // check sensor 
 #1 SENSOR 0
 
-// check invalid command
-ABCDEFGHIJKLMNOPQRSTUVWXYZ
-> 301
-RUN
-> 301
-LOGIN
-> 302
-LOGIN 18080 OK!
-> 302
-
-// check command with incorrect password
-LOGIN 111
-> 201
-PASSWD 111 19090
-> 201
-RESET 111
-> 201
-
 // not logged in state
-SSID sensor
+SSID Sensor_1990
 > 200
 SET 1 90 40 300 300 300
 > 200
@@ -45,39 +21,27 @@ LOGIN 18080
 > 110
 
 // logged in state
-SSID sensor_1989
-> 121
-PASSWD 18080 19090
-> 120
-GET
-> 150 ...
-SET 1 90 40 300 300 300
-> 171
-GET
-> 151 ...
-UPDATE
-> 400
-GET
-> 151 90 300 300 300 1 90 40 300 300 300
-WRITE 80 500 500 500
-> 401
-GET
-> 151 80 500 500 500 1 90 40 300 300 300
-//
-RESET 19090
-> 190
-
-//----------------------------------------------------------------
-#0 test-case 2 // check watering machine
-#1 WATERING 0
-
-// check invalid command
+// check invalid command, invalid arguments
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 > 301
 LOGIN
 > 302
 LOGIN 18080 OK!
 > 302
+SSID
+> 302
+SSID 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ314159265358979
+> 220
+PASSWD
+> 302
+PASSWD 18080 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ314159265358979
+> 221
+PASSWD 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ314159265358979 19090
+> 221
+GET OK!
+> 302
+SET OK!
+> 203
 
 // check command with incorrect password
 LOGIN 111
@@ -87,37 +51,135 @@ PASSWD 111 19090
 RESET 111
 > 201
 
-// not logged in state
-SSID watering_1956
-> 200
-SET 13
-> 200
-SET_T 12:30 20:30
+SSID Sensor_1989
+> 120
+PASSWD 18080 19090
+> 121
 GET
+> 150 0 ...
+SET 1 90 40 300 300 300
+> 171
+// when met "_", no change that specification
+SET _ _ 40 _ 300 _
+> 171
+GET
+> 150 1 ...
+// > 150 1 .. .. .. .. 1 90 40 300 300 300
+// simulation command
+UPDATE HUMID
+> 400
+UPDATE NPK
+> 400
+GET
+> 150 1 90 300 300 300 1 90 40 300 300 300
+WRITE 80 500 500 500
+> 401
+GET
+> 150 1 80 500 500 500 1 90 40 300 300 300
+//
+RESET 19090
+> 190
+
+//----------------------------------------------------------------
+#0 test-case-2 // check watering machine
+#1 WATERING 0
+
+// not logged in, not linked state
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+> 200
+SSID Watering_1990
+> 200
+SET 10
+> 200
+GET
+> 200
+RUN
+> 200
+STOP
+> 200
+ADD_T 1230
+> 200
+REMOVE_T 0530
+> 200
+TIMER_OFF
+> 181
+TIMER_ON
+> 180
+LINK <sensor-ip-address> 18080
 > 200
 LOGIN 18080
 > 110
 
 // logged in, not linked state
-SSID sensor_1989
-> 121
-PASSWD 18080 19090
+// check invalid command, invalid arguments
+0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ314159265358979
+> 301
+LOGIN
+> 302
+LOGIN 18080 OK!
+> 302
+SSID
+> 302
+SSID 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ314159265358979
+> 220
+PASSWD
+> 302
+PASSWD 18080 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ314159265358979
+> 221
+PASSWD 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ314159265358979 19090
+> 221
+RUN OK!
+> 302
+STOP OK!
+> 302
+GET OK!
+> 302
+SET OK!
+> 203
+ADD_T 2430
+> 260
+ADD_T 10105
+> 260
+
+// check command with incorrect password
+LOGIN 111
+> 201
+PASSWD 111 19090
+> 201
+RESET 111
+> 201
+
+SSID Watering_1989
 > 120
+PASSWD 18080 19090
+> 121
 GET
-> 150 ...
-SET 8
+> 150 0 ...
+SET 10
 > 172
 GET
-> 151 8 ...
-SET 
-UPDATE
-> 400
+> 150 2 ...
+RUN
+> 203
+STOP
+> 141
+ADD_T 0600
+> 160
+REMOVE_T 0600
+> 162
+LINK <sensor-ip-address> 18080
+> 130
+
+// logged in, linked state
 GET
-11 > 151 90 300 300 300 1 90 40 300 300 300
-WRITE 80 500 500 500
-> 401
+> 150 6 ...
+RUN
+> 140
 GET
-11 > 151 80 500 500 500 1 90 40 300 300 300
-//
+> 150 7 ...
+STOP
+> 150 6 ...
+
 RESET 19090
 > 190
+

@@ -40,13 +40,13 @@ struct watering_t {
   char password[PASSWORD_LEN + 1];
   char status;
 // perform as bits
-// 000: default, not linked, stopped
-// 111: modified, linked, running
-// must linked before running
+// 0000: not linked, timer off, default, stopped
+// 1111: linked, timer on, modified, running
   unsigned int water_mount;  // liter
   char timer[10][4];
 // timer[i] = "abcd" : "ab" is hour, "cd" is minute
   int sensor_id;
+  int connfd;
 };
 typedef struct watering_t watering_t;
 
@@ -57,8 +57,8 @@ struct fertilizing_t {
   char password[PASSWORD_LEN + 1];
   char status;
 // perform as bits
-// 000: default, not linked, stopped
-// 111: modified, linked, running
+// 0000: not linked, timer off, default, stopped
+// 1111: linked, timer on, modified, running
   unsigned int N_mount; // 0-1000 gram/lit
   unsigned int P_mount; // 0-1000 gram/lit
   unsigned int K_mount; // 0-1000 gram/lit
@@ -66,6 +66,7 @@ struct fertilizing_t {
   char timer[10][4];
 // timer[i] = "abcd" : "ab" is hour, "cd" is minute
   int sensor_id;
+  int connfd;
 };
 typedef struct fertilizing_t fertilizing_t;
 
@@ -76,9 +77,10 @@ struct lamp_t {
   char password[PASSWORD_LEN + 1];
   char status;
 // perform as bits
-// 00: default, stopped
-// 11: modified, running
+// 000: timer off, default, stopped
+// 111: timer on, modified, running
   unsigned int power; // 5-200 watt
+  unsigned int time; // 1-1000 minute, -1 is infinite
   char timer[10][11];
 // timer[i] = "abcdefghijk"
 // "ab":"cd" is start time

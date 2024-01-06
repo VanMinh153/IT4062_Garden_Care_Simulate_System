@@ -11,7 +11,7 @@ struct sensor_t {
   unsigned int id;
   char ssid[SSID_LEN + 1];
   char password[PASSWORD_LEN + 1];
-  unsigned int response_time; // = DEFAULT_RESPONSE_TIME;
+  unsigned int RESPONSE_TIME; // = DEFAULT_RESPONSE_TIME;
   int humidity;  // 0-100%
   int HMAX;
   int HMIN;
@@ -30,6 +30,7 @@ struct watering_machine_t {
   char ssid[SSID_LEN + 1];
   char password[PASSWORD_LEN + 1];
   char status;   // 1 if active, 0 if inactive
+  unsigned int water_mount;  // liter
   time_t time_start;
   time_t time_end;
 };
@@ -41,9 +42,9 @@ struct fertilizing_machine_t {
   char ssid[SSID_LEN + 1];
   char password[PASSWORD_LEN + 1];
   char status;      // 1 if active, 0 if inactive
-  unsigned int nitrogen;    // grams
-  unsigned int phosphorus;  // grams
-  unsigned int potassium;    // grams
+  unsigned int N_mount; // gram/lit
+  unsigned int P_mount; // gram/lit
+  unsigned int K_mount; // gram/lit
   unsigned int water_mount;  // liter
 };
 typedef struct fertilizing_machine_t fertilizing_machine_t;

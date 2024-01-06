@@ -17,11 +17,14 @@
 #define PASSWORD_CHANGE_SUCCESS "120"
 #define RUN_SUCCESS "130"
 #define STOP_SUCCESS "140"
-#define SET_SENSOR_SUCCESS "151"
-#define SET_WATERING_SUCCESS "152"
-#define SET_FERTILIZING_SUCCESS "153"
-#define SET_LAMP_SUCCESS "154"
-#define SET_TIMER_SUCCESS "155"
+#define RUNNING_STATUS "150"
+#define STOP_STATUS "151"
+#define LINK_SUCCESS "160"
+#define SET_TIMER_SUCCESS "170"
+#define SET_SENSOR_SUCCESS "171"
+#define SET_WATERING_SUCCESS "172"
+#define SET_FERTILIZING_SUCCESS "173"
+#define SET_LAMP_SUCCESS "174"
 
 #define NOT_LOGGED_IN "200"
 #define PASSWORD_INCORRECT "201"
@@ -50,30 +53,40 @@ RUN
 STOP
 > 140 // STOP_SUCCESS
 > 200 // NOT_LOGGED_IN
+GET
+> 150 // RUNNING_STATUS
+> 151 // STOP_STATUS
+LINK <ip_address> <password>
+> 160 // LINK_SUCCESS
+
 //--------------------------------------
 // Sensor's command
 SET <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
-> 151 // SET_SENSOR_SUCCESS
+> 171 // SET_SENSOR_SUCCESS
 // simulation command
 UPDATE
+>> set
+humidity = HMAX;
+nitrogen = NMIN;
+phosphorus = PMIN;
+potassium = KMIN;
+WRITE <humidity> <nitrogen> <phosphorus> <potassium>
 
 //--------------------------------------
 // Watering machine's command
 SET <water_mount>
-> 152 // SET_WATERING_SUCCESS
+> 172 // SET_WATERING_SUCCESS
 SET <TIME_START> <TIME_END>
-> 155 // SET_TIMER_SUCCESS
-// simulation command
-UPDATE > Sensor
+> 175 // SET_TIMER_SUCCESS
 
 //--------------------------------------
 // Fertilizing machine's command
 SET <N_mount> <P_mount> <K_mount> <water_mount>
-> 153 // SET_FERTILIZING_SUCCESS
+> 173 // SET_FERTILIZING_SUCCESS
 
 //--------------------------------------
 // Lamp's command
 SET <power>
-> 154 // SET_LAMP_SUCCESS
+> 174 // SET_LAMP_SUCCESS
 SET <TIME_START> <TIME_END>
-> 155 // SET_TIMER_SUCCESS
+> 175 // SET_TIMER_SUCCESS

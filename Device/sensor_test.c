@@ -167,7 +167,7 @@ void* handle_thread(void* arg) {
   send_msg(msg, connfd);
   
   while (1) {
-    retval = get_msg(connfd, recv_msg, recv_buffer);
+    retval = get_msg(connfd, recv_msg, recv_buffer, 0);
     if (retval < 0) {
       if (retval == -3) {
         fprintf(stderr, "Error: messages received exceed the maximum message size\n");
@@ -248,7 +248,7 @@ int handle_msg(char* msg, connection_t* p_conninfo) {
 
   // handle the BYE command
   } else if (strcmp(command, "BYE") == 0) {
-    
+  }
 }
 // int handle_connect(int connfd, int* p_id, char* p_ssid) {
 //   unsigned int id;

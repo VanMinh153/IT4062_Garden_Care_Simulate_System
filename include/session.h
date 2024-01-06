@@ -13,7 +13,6 @@ extern unsigned int numSession;
 struct session_t {
   char recv_buffer[MSG_SIZE];
   bool hasLogin;
-  char username[NAME_SIZE];
   int connfd;
   struct session_t* prev;
   struct session_t* next;

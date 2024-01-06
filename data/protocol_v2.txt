@@ -142,16 +142,16 @@ REMOVE_T <TIME>
 //----------------------------------------------------------------
 // Lamp's command
 GET
-> 150 <status> <power> <list-of-timer> ... // GET_SUCCESS
-SET <power>
+> 150 <status> <power> <time> <list-of-timer> ... // GET_SUCCESS
+SET <power> <time>
 > 174 // SET_LAMP_SUCCESS
 > 203 // INVALID_ARGS
-ADD_T <TIME_START> <TIME_END> ?<power>
+ADD_T <TIME_START><TIME_END>:<power>
 > 160 // ADD_TIMER_SUCCESS
 > 161 // ALREADY_EXIST
 > 203 // INVALID_ARGS
 > 261 // MAXIMUM_TIMER
-REMOVE_T <TIME_START> <TIME_END> ?<power>
+REMOVE_T <TIME_START><TIME_END>
 > 162 // REMOVE_TIMER_SUCCESS
 > 203 // INVALID_ARGS
 > 262 // NOT_FOUND

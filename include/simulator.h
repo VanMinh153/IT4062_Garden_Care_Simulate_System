@@ -70,6 +70,13 @@ struct fertilizing_t {
 };
 typedef struct fertilizing_t fertilizing_t;
 
+struct lamp_timer_t {
+  char time_start[4];
+// timer[i] = "abcd" : "ab" is hour, "cd" is minute
+  char time_end[4];
+  unsigned int power; // 0 is setting to use current power
+};
+
 // Photosynthesis support lamp part: glows with power P according to the time scheduled by the user.
 struct lamp_t {
   int id;
@@ -81,11 +88,7 @@ struct lamp_t {
 // 111: timer on, modified, running
   unsigned int power; // 5-200 watt
   unsigned int time; // 1-1000 minute, -1 is infinite
-  char timer[10][11];
-// timer[i] = "abcdefghijk"
-// "ab":"cd" is start time
-// "ef":"gh" is end time
-// "ijk" is power, 5-200 watt, "000" is current power setted
+  struct lamp_timer_t timer[10];
 };
 typedef struct lamp_t lamp_t;
 

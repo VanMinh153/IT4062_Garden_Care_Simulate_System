@@ -20,7 +20,7 @@
 // char ssid[SSID_LEN + 1];
 // char password[PASSWORD_LEN + 1];
 // char status;
-0
+4
 // unsigned int water_mount;
 15
 // char timer[10][4];
@@ -31,7 +31,7 @@
 // char ssid[SSID_LEN + 1];
 // char password[PASSWORD_LEN + 1];
 // char status;
-0
+4
 // unsigned int N_mount; // 0-1000 gram/lit
 200
 // unsigned int P_mount; // 0-1000 gram/lit
@@ -47,12 +47,12 @@
 // char ssid[SSID_LEN + 1];
 // char password[PASSWORD_LEN + 1];
 // char status;
-0
+4
 // unsigned int power; // 5-200 watt
 150
 // unsigned int time; // 1-1000 minute, -1 is infinite
 45
 // char timer[10][11];
-18302030000
-21302330050
-01300330050
+1830|2030|0
+2130|2330|50
+0130|0330|50

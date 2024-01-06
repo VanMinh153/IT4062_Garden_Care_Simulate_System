@@ -1,2 +1,71 @@
+./sensor Sensor 18080
+./watering Watering_MC 28080
+./fertilizing Fertilizing_MC 38080
+./lamp Lamp 48080
+./client
+// Port 48048
+
+// test case with 1 device of each type
+int sensor_fd[];
+int watering_fd[];
+int fertilizing_fd[];
+int lamp_fd[];
+
 //--------------------------------------
-// test-case 1
+#0 sensor test-case 1
+#1 sensor_fd[0]
+
+// check invalid command
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+> 301
+RUN
+> 301
+LOGIN
+> 302
+LOGIN 18080 OK!
+> 302
+
+// check command with incorrect password
+LOGIN 111
+> 201
+PASSWD 111 19090
+> 201
+RESET 111
+> 201
+
+// not logged in state
+SSID sensor
+> 200
+SET 1 90 40 300 300 300
+> 200
+GET
+> 200
+LOGIN 18080
+> 110
+
+// logged in state
+SSID sensor_1989
+> 180
+PASSWD 18080 19090
+> 120
+GET
+> 150 ...
+SET 1 90 40 300 300 300
+> 171
+GET
+> 151 ...
+UPDATE
+> 400
+GET
+11 > 151 90 300 300 300 1 90 40 300 300 300
+WRITE 80 500 500 500
+> 401
+GET
+11 > 151 80 500 500 500 1 90 40 300 300 300
+//
+RESET 19090
+> 190
+
+//--------------------------------------
+#0 sensor test-case 2
+#1 sensor_fd[0]

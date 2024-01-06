@@ -25,12 +25,18 @@
 #define SET_WATERING_SUCCESS "172"
 #define SET_FERTILIZING_SUCCESS "173"
 #define SET_LAMP_SUCCESS "174"
+#define SSID_CHANGE_SUCCESS "180"
+#define RESET_TO_DEFAULT "190"
 
 #define NOT_LOGGED_IN "200"
 #define PASSWORD_INCORRECT "201"
 
-#define MSG_NOT_DETERMINED "300"
-#define MSG_OVERLENGTH "301"
+#define MSG_OVERLENGTH "300"
+#define UNKNOWN_COMMAND "301"
+#define MSG_NOT_DETERMINED "302"
+
+#define UPDATE_SUCCESS "400"
+#define WRITE_SUCCESS "401"
 
 
 // Common command
@@ -43,6 +49,9 @@ LOGIN <password>
 > 110 // LOGIN_SUCCESS
 > 100 // LOGGED_IN
 > 201 // PASSWORD_INCORRECT
+SSID <new_ssid>
+> 180 // SSID_CHANGE_SUCCESS
+> 200 // NOT_LOGGED_IN
 PASSWD <old_password> <new_password>
 > 120 // PASSWORD_CHANGE_SUCCESS
 > 201 // PASSWORD_INCORRECT
@@ -54,23 +63,37 @@ STOP
 > 140 // STOP_SUCCESS
 > 200 // NOT_LOGGED_IN
 GET
-> 150 // RUNNING_STATUS
-> 151 // STOP_STATUS
+> 150 // DEFAULT
+> 151 // INITIATED
+> 251 // NOT_INITIATED
 LINK <ip_address> <password>
 > 160 // LINK_SUCCESS
+RESET <password>
+> 190 // RESET_TO_DEFAULT
+> 201 // PASSWORD_INCORRECT
 
 //--------------------------------------
 // Sensor's command
+GET
+> 150 <humidity> <nitrogen> <phosphorus> <potassium> <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
+// DEFAULT
+> 151 <humidity> <nitrogen> <phosphorus> <potassium> <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
+// INITIATED
 SET <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
 > 171 // SET_SENSOR_SUCCESS
 // simulation command
-UPDATE
->> set
-humidity = HMAX;
-nitrogen = NMIN;
-phosphorus = PMIN;
-potassium = KMIN;
+UPDATE HUMIDITY
+> 400
+// setup
+// humidity = HMAX;
+UPDATE NPK
+// setup
+// humidity += (100-humidity)*0.5;
+// nitrogen = NMIN;
+// phosphorus = PMIN;
+// potassium = KMIN;
 WRITE <humidity> <nitrogen> <phosphorus> <potassium>
+> 401
 
 //--------------------------------------
 // Watering machine's command

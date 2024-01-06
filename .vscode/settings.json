@@ -2,8 +2,13 @@
   "cSpell.words": [
     "connfd",
     "conninfo",
+    "HMAX",
+    "HMIN",
+    "KMIN",
     "listenfd",
-    "OVERLENGTH"
+    "NMIN",
+    "OVERLENGTH",
+    "PMIN"
   ],
   "files.associations": {
     "stdlib.h": "c",

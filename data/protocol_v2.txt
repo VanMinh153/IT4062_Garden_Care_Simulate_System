@@ -1,0 +1,79 @@
+./sensor Sensor 18080
+./watering Watering_MC 28080
+./fertilizing Fertilizing_MC 38080
+./lamp Lamp 48080
+./client
+// Port 48048
+
+
+#define LOGGED_IN "100"
+#define SENSOR_CONNECTED "101"
+#define WATERING_CONNECTED "102"
+#define FERTILIZING_CONNECTED "103"
+#define LAMP_CONNECTED "104"
+#define CLIENT_CONNECTED "105"
+
+#define LOGIN_SUCCESS "110"
+#define PASSWORD_CHANGE_SUCCESS "120"
+#define RUN_SUCCESS "130"
+#define STOP_SUCCESS "140"
+#define SET_SENSOR_SUCCESS "151"
+#define SET_WATERING_SUCCESS "152"
+#define SET_FERTILIZING_SUCCESS "153"
+#define SET_LAMP_SUCCESS "154"
+#define SET_TIMER_SUCCESS "155"
+
+#define NOT_LOGGED_IN "200"
+#define PASSWORD_INCORRECT "201"
+
+#define MSG_NOT_DETERMINED "300"
+#define MSG_OVERLENGTH "301"
+
+
+// Common command
+CONNECT <id> <ssid>
+> 101 <id> <ssid> // SENSOR_CONNECTED
+> 102 <id> <ssid> // WATERING_CONNECTED
+> 103 <id> <ssid> // FERTILIZING_CONNECTED
+> 104 <id> <ssid> // LAMP_CONNECTED
+LOGIN <password>
+> 110 // LOGIN_SUCCESS
+> 100 // LOGGED_IN
+> 201 // PASSWORD_INCORRECT
+PASSWD <old_password> <new_password>
+> 120 // PASSWORD_CHANGE_SUCCESS
+> 201 // PASSWORD_INCORRECT
+// RUN and STOP not use for sensor
+RUN
+> 130 // RUN_SUCCESS
+> 200 // NOT_LOGGED_IN
+STOP
+> 140 // STOP_SUCCESS
+> 200 // NOT_LOGGED_IN
+//--------------------------------------
+// Sensor's command
+SET <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
+> 151 // SET_SENSOR_SUCCESS
+// simulation command
+UPDATE
+
+//--------------------------------------
+// Watering machine's command
+SET <water_mount>
+> 152 // SET_WATERING_SUCCESS
+SET <TIME_START> <TIME_END>
+> 155 // SET_TIMER_SUCCESS
+// simulation command
+UPDATE > Sensor
+
+//--------------------------------------
+// Fertilizing machine's command
+SET <N_mount> <P_mount> <K_mount> <water_mount>
+> 153 // SET_FERTILIZING_SUCCESS
+
+//--------------------------------------
+// Lamp's command
+SET <power>
+> 154 // SET_LAMP_SUCCESS
+SET <TIME_START> <TIME_END>
+> 155 // SET_TIMER_SUCCESS

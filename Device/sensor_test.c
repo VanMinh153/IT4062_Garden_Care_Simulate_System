@@ -85,6 +85,12 @@ int main(int argc, char** argv) {
 
   // Handle connection
 	while (1) {
+    unsigned int id;
+    char ssid[SSID_LEN + 1];
+    char command[COMMAND_LEN + 1];
+    char type_of_msg[21];
+    char overcheck = '\0';
+
     if (numConnect >= CONNECTION_MAX) {
       fprintf(stderr, "Error: maximum number of connections exceeded\n");
       sleep(3);
@@ -96,17 +102,25 @@ int main(int argc, char** argv) {
     }
     
     retval = get_msg(connfd, recv_msg, recv_buffer, TIMEOUT);
-    if (strcmp(recv_msg, CONNECT_MSG) != 0) {
-      fprintf(stderr, "Error: connect message is not received\n");
+    snprintf(type_of_msg, sizeof(type_of_msg), "%%%ds %%d %%%ds%%c", COMMAND_LEN, SSID_LEN);
+    retval = sscanf(recv_msg, type_of_msg, command, id, ssid, overcheck);
+    if (retval != 3) {
+      send_msg(MSG_NOT_DETERMINED, connfd);
+      return 1;
+    }
+
+    if (strcmp(command, "CONNECT") != 0) {
       close(connfd);
       continue;
     }
-
+    
     inet_ntop(AF_INET, &client.sin_addr, clientIP, sizeof(clientIP) );
     // Can print client's IP and client's port here
     for (int i = 0; i < CONNECTION_MAX; i++) {
       if (connCtrl[i] == 0) {
         connCtrl[i] = 1;
+        conninfo[i].id = id;
+        strncpy(conninfo[i].SSID, ssid, SSID_LEN);
         conninfo[i].ip = client.sin_addr.s_addr;
         conninfo[i].port = client.sin_port;
         conninfo[i].connfd = connfd;
@@ -176,75 +190,86 @@ int handle_msg(char* msg, connection_t* p_conninfo) {
   connection_t conninfo = *p_conninfo;
   bool hasLogin = conninfo.hasLogin;
   int connfd = conninfo.connfd;
-  char command[COMMAND_SIZE];
+  char password[PASSWORD_LEN + 1];
+  char command[COMMAND_LEN + 1];
   char type_of_msg[21];
   char overcheck = '\0';
   int retval = -1;
-  sscanf(msg, "%4s", command); // Get 4 character for the command
+
+  memset(command, 0, COMMAND_LEN + 1);
+  memset(type_of_msg, 0, 21);
+  memset(password, 0, PASSWORD_LEN + 1);
+  snprintf(type_of_msg, sizeof(type_of_msg), "%%%ds", COMMAND_LEN);
+  sscanf(msg, type_of_msg, command);
   // handle the LOGIN command
-  if (strcmp(command, "USER") == 0) {
-    snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%%ds %%c", NAME_SIZE);
-    retval = sscanf(msg, type_of_msg, username, overcheck);
+  // LOGIN <password>
+  if (strcmp(command, "LOGIN") == 0) {
+    snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%%ds%%c", PASSWORD_LEN);
+    retval = sscanf(msg, type_of_msg, password, overcheck);
 
-    if (strlen(username) == NAME_SIZE) {
-      send_msg(ACCOUNT_NOT_EXIST, connfd);
-      return 0;
+    if (retval != 1) {
+      send_msg(MSG_NOT_DETERMINED, connfd);
+      return 1;
     }
-    if ( retval < 1 || overcheck != '\0' ) {
-      send_msg(ACCOUNT_NOT_EXIST, connfd);
-      return 0;
-    }
-    if (hasLogin == true) {
-      send_msg(LOGGED_IN, connfd);
-      return 0;
-    }
-
-    bool accExitst = false;
-    for (int i = 0; i < numAccount; i++) {
-      if (strcmp(username, accounts[i].username) == 0) {
-        accExitst = true;
-        if (accounts[i].status == false) {
-          send_msg(ACCOUNT_LOCKED, connfd);
-          return 0;
-        }
-      }
-    }
-    if (accExitst == false) {
-      send_msg(ACCOUNT_NOT_EXIST, connfd);
-      return 0;
-    }
-
-    session->hasLogin = true;
-    memmove(session->username, username, sizeof(username));
-    // Can print user logged in successful here
-    send_msg(LOGIN_SUCCESS, connfd);
-    return 0;
-  
-  // handle the POST command
-  } else if (strcmp(command, "POST") == 0) {
     if (hasLogin == false) {
-      send_msg(NOT_LOGGED_IN, connfd);
-      return 0;
+      send_msg(LOGGED_IN, connfd);
+      return 1;
     }
-    // Can print post content here
-    send_msg(POST_SUCCESS, connfd);
-    return 0;
+    if (strcmp(password, sensor.password) == 0) {
+      p_conninfo->hasLogin = true;
+      hasLogin = true;
+      send_msg(LOGIN_SUCCESS, connfd);
+      return 0;
+    } else {
+      send_msg(PASSWORD_INCORRECT, connfd);
+      return 1;
+    }
+  
+  // handle the PASSWD command
+  // PASSWD <old_password> <new_password>
+  } else if (strcmp(command, "PASSWD") == 0) {
+    char new_password[PASSWORD_LEN + 1];
+    snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%%ds %%%ds%%c", PASSWORD_LEN, PASSWORD_LEN);
+    retval = sscanf(msg, type_of_msg, password, new_password, overcheck);
+    if (retval != 1) {
+      send_msg(MSG_NOT_DETERMINED, connfd);
+      return 1;
+    }
+    if (strcmp(password, sensor.password) == 0) {
+      strncpy(sensor.password, new_password, PASSWORD_LEN);
+      send_msg(PASSWORD_CHANGE_SUCCESS, connfd);
+      return 0;
+    } else {
+      send_msg(PASSWORD_INCORRECT, connfd);
+      return 1;
+    }
+
   // handle the BYE command
   } else if (strcmp(command, "BYE") == 0) {
-    if (hasLogin == false) {
-      send_msg(NOT_LOGGED_IN, connfd);
-      return 0;
-    }
-    session->hasLogin = false;
-    *session->username = '\0';
-    send_msg(LOGOUT_SUCCESS, connfd);
-    return 0;
-  } else {
-    send_msg(MSG_NOT_DETERMINED, connfd);
-    return 0;
-  }
-  return 0;
+    
 }
+// int handle_connect(int connfd, int* p_id, char* p_ssid) {
+//   unsigned int id;
+//   char ssid[SSID_LEN + 1];
+//   char command[COMMAND_LEN + 1];
+//   char type_of_msg[21];
+//   char overcheck = '\0';
+//   int retval = -1;
+
+//   retval = get_msg(connfd, recv_msg, recv_buffer, TIMEOUT);
+//   snprintf(type_of_msg, sizeof(type_of_msg), "%%%ds %%d %%%ds%%c", COMMAND_LEN, SSID_LEN);
+//   retval = sscanf(recv_msg, type_of_msg, command, id, ssid, overcheck);
+//   if (retval != 3) {
+//     send_msg(MSG_NOT_DETERMINED, connfd);
+//     return 1;
+//   }
+
+//   if (strcmp(command, "CONNECT") != 0) {
+//     close(connfd);
+//     return 1;
+//   }
+//   id = 
+// }
 void gen_sensor_status() {
   sensor.humidity = rand() % 51 + 50;
   sensor.nitrogen = rand() % 1001 + 1000;

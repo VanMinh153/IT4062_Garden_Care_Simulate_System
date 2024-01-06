@@ -13,6 +13,14 @@
 // #include "../include/simulator.h"
 
 int main() {
-  printf("size = %d\n", sizeof(struct in_addr) );
+  char str[] = "Hello_World!";
+  char str2[5] = "IT";
+  char c = '\0';
+  int retval = -1;
+  retval = sscanf(str, "%*s%c", 3, str2, &c);
+  printf("%s\n", str2);
+  printf("%c\n", c);
+  printf("%d\n", retval);
+  // printf("size = %d\n", sizeof(struct in_addr) );
   return 0;
 }

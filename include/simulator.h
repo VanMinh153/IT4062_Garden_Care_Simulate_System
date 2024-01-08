@@ -4,12 +4,19 @@
 #define DEVICE_MAX 100
 #define SSID_LEN 20
 #define PASSWORD_LEN 10
-#define DEFAULT_RESPONSE_TIME 100 // 100 ms
+#define TIMER_COUNT 10
 // Type of device
 #define SENSOR 1
 #define WATERING 2
 #define FERTILIZING 3
 #define LAMP 4
+//
+#define DEFAULT_RESPONSE_TIME 100 // 100 ms
+#define SENSOR_STATUS_BIT_COUNT 1
+#define WATERING_STATUS_BIT_COUNT 4
+#define FERTILIZING_STATUS_BIT_COUNT 4
+#define LAMPING_STATUS_BIT_COUNT 3
+// Source path
 #define DEFAULT_SPECS_SRC "data/default-specs.txt"
 
 // Environmental sensors measure humidity and concentrations of nutrients nitrogen (N), phosphorus (P), and potassium (K) in the soil. The sensors record data every T minutes.
@@ -43,7 +50,7 @@ struct watering_t {
 // 0000: not linked, timer off, default, stopped
 // 1111: linked, timer on, modified, running
   unsigned int water_mount;  // liter
-  char timer[10][4];
+  char timer[TIMER_COUNT][4];
 // timer[i] = "abcd" : "ab" is hour, "cd" is minute
   int sensor_id;
   int connfd;
@@ -63,7 +70,7 @@ struct fertilizing_t {
   unsigned int P_mount; // 0-1000 gram/lit
   unsigned int K_mount; // 0-1000 gram/lit
   unsigned int water_mount;  // 0-100 liter
-  char timer[10][4];
+  char timer[TIMER_COUNT][4];
 // timer[i] = "abcd" : "ab" is hour, "cd" is minute
   int sensor_id;
   int connfd;
@@ -88,7 +95,7 @@ struct lamp_t {
 // 111: timer on, modified, running
   unsigned int power; // 5-200 watt
   unsigned int time; // 1-1000 minute, -1 is infinite
-  struct lamp_timer_t timer[10];
+  struct lamp_timer_t timer[TIMER_COUNT];
 };
 typedef struct lamp_t lamp_t;
 

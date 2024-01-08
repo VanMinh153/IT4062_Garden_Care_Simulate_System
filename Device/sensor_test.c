@@ -278,19 +278,53 @@ int handle_msg(char* msg, connection_t* p_conninfo) {
       return 1;
     }
     if (strcmp(password, sensor.password) == 0) {
-      memset(sensor.password, 0, PASSWORD_LEN);
+      reset_default_specs();
       send_msg(RESET_TO_DEFAULT, connfd);
       return 0;
     } else {
       send_msg(PASSWORD_INCORRECT, connfd);
       return 1;
     }
-  }
-
 // //----------------------------------------------------------------
 // // Sensor's command
 // GET
 // > 150 <status> <humidity> <nitrogen> <phosphorus> <potassium> <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN> // GET_SUCCESS
+  } else if (strcmp(command, "GET") == 0) {
+    char status[STATUS_LEN + 1];
+    snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%%ds%%c", STATUS_LEN);
+    retval = sscanf(msg, type_of_msg, status, overcheck);
+    if (retval != 1) {
+      send_msg(MSG_NOT_DETERMINED, connfd);
+      return 1;
+    }
+    if (strcmp(status, "SENSOR") == 0) {
+      snprintf(msg, MSG_SIZE, "%s %s %d %d %d %d %d %d %d %d %d", GET_SUCCESS, status, sensor.humidity, sensor.nitrogen, sensor.phosphorus, sensor.potassium, sensor.response_time, sensor.hmax, sensor.hmin, sensor.nmin, sensor.pmin, sensor.kmin);
+      send_msg(msg, connfd);
+      return 0;
+    } else {
+      send_msg(INVALID_ARGS, connfd);
+      return 1;
+    }
+  } else if (strcmp(command, "SET") == 0) {
+    int response_time, hmax, hmin, nmin, pmin, kmin;
+    snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %d %d %d %d %d %d%%c", &response_time, &hmax, &hmin, &nmin, &pmin, &kmin, overcheck);
+    retval = sscanf(msg, type_of_msg);
+    if (retval != 6) {
+      send_msg(MSG_NOT_DETERMINED, connfd);
+      return 1;
+    }
+    if (response_time < 0 || hmax < 0 || hmin < 0 || nmin < 0 || pmin < 0 || kmin < 0) {
+      send_msg(INVALID_ARGS, connfd);
+      return 1;
+    }
+    sensor.response_time = response_time;
+    sensor.hmax = hmax;
+    sensor.hmin = hmin;
+    sensor.nmin = nmin;
+    sensor.pmin = pmin;
+    sensor.kmin = kmin;
+    send_msg(SET_SENSOR_SUCCESS, connfd);
+    return 0;
 // SET <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
 // > 171 // SET_SENSOR_SUCCESS
 // > 203 // INVALID_ARGS

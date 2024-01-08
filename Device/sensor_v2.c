@@ -21,6 +21,7 @@
 char connCtrl[CONNECTION_MAX];
 connection_t conninfo[CONNECTION_MAX];
 int numConnect = 0; 
+int end_idx = 0;
 sensor_t sensor;
 sensor_t default_specs;
 
@@ -119,23 +120,52 @@ int main(int argc, char** argv) {
     inet_ntop(AF_INET, &client.sin_addr, clientIP, sizeof(clientIP) );
     // Can print client's IP and client's port here
     for (int i = 0; i < CONNECTION_MAX; i++) {
-      if (connCtrl[i] == 0) {
-        connCtrl[i] = 1;
-        conninfo[i].id = id;
-        strncpy(conninfo[i].SSID, ssid, SSID_LEN);
-        conninfo[i].ip = client.sin_addr.s_addr;
-        conninfo[i].port = client.sin_port;
-        conninfo[i].connfd = connfd;
-        conninfo[i].connCtrl_idx = i;
-        conninfo[i].logged = false;
-        // numConnect++;
-        retval = pthread_create(&tid, NULL, &handle_thread, &conninfo[i]);
-        if (retval != 0) perror("\npthread_create()");
-        // printf("Number of connection: %d\n", numConnect);
-        break;
+      if (connCtrl[i] != 0) continue;
+      connCtrl[i] = 1;
+      conninfo[i].id = id;
+      strncpy(conninfo[i].SSID, ssid, SSID_LEN);
+      conninfo[i].ip = client.sin_addr.s_addr;
+      conninfo[i].port = client.sin_port;
+      conninfo[i].connfd = connfd;
+      conninfo[i].connCtrl_idx = i;
+      conninfo[i].logged = false;
+      numConnect++;
+      if (i > end_idx) end_idx = i;
+      break;
+    }
+//----------------------------------------------------------------
+    for (int i = 0; i <= end_idx; i++) {
+      if (connCtrl[i] == 0) continue;
+      connection_t conninfo = *( (connection_t*) arg);
+      int connfd = conninfo.connfd;
+      char recv_msg[MSG_SIZE], recv_buffer[MSG_SIZE];
+      char msg[MSG_SIZE];
+      memset(recv_msg, 0, MSG_SIZE);
+      memset(recv_buffer, 0, MSG_SIZE);
+      memset(msg, 0, MSG_SIZE);
+      int retval = -1;
+
+      snprintf(msg, MSG_SIZE, "%s %d %s", SENSOR_CONNECTED, sensor.id, sensor.ssid);
+      send_msg(msg, connfd);
+      
+      while (1) {
+        retval = get_msg(connfd, recv_msg, recv_buffer, 0);
+        if (retval < 0) {
+          if (retval == -3) {
+            fprintf(stderr, "Error: messages received exceed the maximum message size\n");
+            fprintf(stderr, "Notice: message length is limited to %d characters\n", MSG_SIZE);
+            send_msg(MSG_NOT_DETERMINED, connfd);
+          } else {
+            close(connfd);
+            connCtrl[conninfo.connCtrl_idx] = 0;
+            pthread_exit(NULL);
+          }
+        }
+        handle_msg(recv_msg, &conninfo[i]);
       }
     }
   }
+//----------------------------------------------------------------
 	close(listenfd);
 	return 0;
 }
@@ -146,40 +176,9 @@ int main(int argc, char** argv) {
 */
 void* handle_thread(void* arg) {
   pthread_detach(pthread_self());
-  if (strcmp((char*) arg, CONTROLLER_THREAD) == 0) {
-    while (1) {
-      ctrl_sensor_status();
-      sleep(3);
-    }
-  }
-
-  connection_t* p_conninfo = (connection_t*) arg;
-  connection_t conninfo = *( (connection_t*) arg);
-  int connfd = conninfo.connfd;
-  char recv_msg[MSG_SIZE], recv_buffer[MSG_SIZE];
-  char msg[MSG_SIZE];
-  memset(recv_msg, 0, MSG_SIZE);
-  memset(recv_buffer, 0, MSG_SIZE);
-  memset(msg, 0, MSG_SIZE);
-  int retval = -1;
-
-  snprintf(msg, MSG_SIZE, "%s %d %s", SENSOR_CONNECTED, sensor.id, sensor.ssid);
-  send_msg(msg, connfd);
-  
   while (1) {
-    retval = get_msg(connfd, recv_msg, recv_buffer, 0);
-    if (retval < 0) {
-      if (retval == -3) {
-        fprintf(stderr, "Error: messages received exceed the maximum message size\n");
-        fprintf(stderr, "Notice: message length is limited to %d characters\n", MSG_SIZE);
-        send_msg(MSG_NOT_DETERMINED, connfd);
-      } else {
-        close(connfd);
-        connCtrl[conninfo.connCtrl_idx] = 0;
-        pthread_exit(NULL);
-      }
-    }
-    handle_msg(recv_msg, p_conninfo);
+    ctrl_sensor_status();
+    sleep(3);
   }
 }
 /*

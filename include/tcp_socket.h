@@ -11,6 +11,7 @@
 #define DELIMITER_SIZE 3
 #define COMMAND_LEN 16    // Max length of command
 #define CTRL_LOOP 5
+//----------------------------------------------------------------
 // Protocol design
 #define LOGGED_IN "100"
 #define SENSOR_CONNECTED "101"
@@ -54,7 +55,51 @@
 
 #define UPDATE_SUCCESS "400"
 #define WRITE_SUCCESS "401"
+//----------------------------------------------------------------
+// response message
+#define M100 "Have been logged in"
+#define M101 "Sensor connected"
+#define M102 "Watering connected"
+#define M103 "Fertilizing connected"
+#define M104 "Lamp connected"
+#define M105 "Client connected"
 
+#define M110 "Login successful"
+#define M120 "SSID changed"
+#define M121 "Password changed"
+#define M130 "Link successful"
+#define M140 "Run successful"
+#define M141 "Stop successful"
+#define M150 "Get successful"
+#define M160 "Add timer successful"
+#define M161 "Already exist"
+#define M162 "Remove timer successful"
+#define M171 "Set sensor successful"
+#define M172 "Set watering successful"
+#define M173 "Set fertilizing successful"
+#define M174 "Set lamp successful"
+#define M180 "Timer on successful"
+#define M181 "Timer off successful"
+#define M190 "Reset to default successful"
+
+#define M200 "Not logged in"
+#define M201 "Password incorrect"
+#define M202 "Not linked"
+#define M203 "Invalid arguments"
+#define M220 "Invalid SSID"
+#define M221 "Invalid password"
+#define M230 "Link failed"
+#define M260 "Invalid time"
+#define M261 "Maximum timer"
+#define M262 "Not found"
+
+#define M300 "Message overlength"
+#define M301 "Unknown command"
+#define M302 "Message not determined"
+
+#define M400 "Update successful"
+#define M401 "Write successful"
+//----------------------------------------------------------------
 
 struct connection_t {
   int id;

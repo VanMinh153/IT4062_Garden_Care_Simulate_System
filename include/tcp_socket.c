@@ -86,22 +86,49 @@ int get_msg(int connfd, char* message, char* recv_buffer) {
   } while (received_bytes > 0);
   return -1;
 }
-/* Return a string describing the meaning of the server's message code */
 char* str_to_msg(char* msg_code) {
   char* ptr;
   int code = strtol(msg_code, &ptr, 10);
   if (ptr != msg_code + 3) return NULL;
   switch (code) {
-    case 100: return M100; break;
-    case 110: return M110; break;
-    case 120: return M120; break;
-    case 130: return M130; break;
-    case 211: return M211; break;
-    case 212: return M212; break;
-    case 213: return M213; break;
-    case 221: return M221; break;
-    case 300: return M300; break;
-    case 301: return M301; break;
+    case 100: return M100;
+    case 101: return M101;
+    case 102: return M102;
+    case 103: return M103;
+    case 104: return M104;
+    case 105: return M105;
+    case 110: return M110;
+    case 120: return M120;
+    case 121: return M121;
+    case 130: return M130;
+    case 140: return M140;
+    case 141: return M141;
+    case 150: return M150;
+    case 160: return M160;
+    case 161: return M161;
+    case 162: return M162;
+    case 171: return M171;
+    case 172: return M172;
+    case 173: return M173;
+    case 174: return M174;
+    case 180: return M180;
+    case 181: return M181;
+    case 190: return M190;
+    case 200: return M200;
+    case 201: return M201;
+    case 202: return M202;
+    case 203: return M203;
+    case 220: return M220;
+    case 221: return M221;
+    case 230: return M230;
+    case 260: return M260;
+    case 261: return M261;
+    case 262: return M262;
+    case 300: return M300;
+    case 301: return M301;
+    case 302: return M302;
+    case 400: return M400;
+    case 401: return M401;
     default: return NULL;
   }
 }

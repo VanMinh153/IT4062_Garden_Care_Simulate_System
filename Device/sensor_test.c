@@ -29,6 +29,7 @@ void* handle_thread(void* connfd);
 int handle_msg(char* msg, connection_t* connection);
 void gen_sensor_status();
 void ctrl_sensor_status();
+void reset_default_specs();
 
 int main(int argc, char** argv) {
   int listenfd, connfd;
@@ -290,42 +291,32 @@ int handle_msg(char* msg, connection_t* p_conninfo) {
 // GET
 // > 150 <status> <humidity> <nitrogen> <phosphorus> <potassium> <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN> // GET_SUCCESS
   } else if (strcmp(command, "GET") == 0) {
-    char status[STATUS_LEN + 1];
-    snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%%ds%%c", STATUS_LEN);
-    retval = sscanf(msg, type_of_msg, status, overcheck);
-    if (retval != 1) {
-      send_msg(MSG_NOT_DETERMINED, connfd);
-      return 1;
-    }
-    if (strcmp(status, "SENSOR") == 0) {
-      snprintf(msg, MSG_SIZE, "%s %s %d %d %d %d %d %d %d %d %d", GET_SUCCESS, status, sensor.humidity, sensor.nitrogen, sensor.phosphorus, sensor.potassium, sensor.response_time, sensor.hmax, sensor.hmin, sensor.nmin, sensor.pmin, sensor.kmin);
-      send_msg(msg, connfd);
-      return 0;
-    } else {
-      send_msg(INVALID_ARGS, connfd);
-      return 1;
-    }
+    char sensor_data[81];
+    snprintf(sensor_data, sizeof(sensor_data), "%s %u %u %u %u %u %u %u %u %u %u %u", GET_SUCCESS, sensor.status, sensor.humidity, sensor.nitrogen, sensor.phosphorus, sensor.potassium, sensor.RESPONSE_TIME, sensor.HMAX, sensor.HMIN, sensor.NMIN, sensor.PMIN, sensor.KMIN);
+    send_msg(sensor_data, connfd);
+    return 1;
+// SET <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
   } else if (strcmp(command, "SET") == 0) {
-    int response_time, hmax, hmin, nmin, pmin, kmin;
-    snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %d %d %d %d %d %d%%c", &response_time, &hmax, &hmin, &nmin, &pmin, &kmin, overcheck);
-    retval = sscanf(msg, type_of_msg);
+    unsigned int RESPONSE_TIME, HMAX, HMIN, NMIN, PMIN, KMIN;
+    snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%u %%u %%u %%u %%u %%u%%c");
+    retval = sscanf(msg, type_of_msg, &RESPONSE_TIME, &HMAX, &HMIN, &NMIN, &PMIN, &KMIN, overcheck);
     if (retval != 6) {
       send_msg(MSG_NOT_DETERMINED, connfd);
       return 1;
     }
-    if (response_time < 0 || hmax < 0 || hmin < 0 || nmin < 0 || pmin < 0 || kmin < 0) {
+    retval = check_sensor_specs(RESPONSE_TIME, HMAX, HMIN, NMIN, PMIN, KMIN);
+    if (retval != 0) {
       send_msg(INVALID_ARGS, connfd);
       return 1;
     }
-    sensor.response_time = response_time;
-    sensor.hmax = hmax;
-    sensor.hmin = hmin;
-    sensor.nmin = nmin;
-    sensor.pmin = pmin;
-    sensor.kmin = kmin;
+    sensor.RESPONSE_TIME = RESPONSE_TIME;
+    sensor.HMAX = HMAX;
+    sensor.HMIN = HMIN;
+    sensor.NMIN = NMIN;
+    sensor.PMIN = PMIN;
+    sensor.KMIN = KMIN;
     send_msg(SET_SENSOR_SUCCESS, connfd);
     return 0;
-// SET <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
 // > 171 // SET_SENSOR_SUCCESS
 // > 203 // INVALID_ARGS
 // // simulation command
@@ -337,7 +328,10 @@ int handle_msg(char* msg, connection_t* p_conninfo) {
 // // humidity += (100-humidity)*0.5;
 // WRITE <humidity> <nitrogen> <phosphorus> <potassium>
 // > 401 // WRITE_SUCCESS
-
+  } else {
+    send_msg(UNKNOWN_COMMAND, connfd);
+    return 1;
+  }
 }
 // int handle_connect(int connfd, int* p_id, char* p_ssid) {
 //   unsigned int id;
@@ -361,6 +355,7 @@ int handle_msg(char* msg, connection_t* p_conninfo) {
 //   }
 //   id = 
 // }
+
 void gen_sensor_status() {
   sensor.humidity = rand() % 51 + 50;
   sensor.nitrogen = rand() % 1001 + 1000;
@@ -373,4 +368,14 @@ void ctrl_sensor_status() {
   sensor.nitrogen *= PERCENT_CHANGE/100;
   sensor.phosphorus *= PERCENT_CHANGE/100;
   sensor.potassium *= PERCENT_CHANGE/100;
+}
+void reset_default_specs() {
+  strcpy(sensor.ssid, default_specs.ssid);
+  strcpy(sensor.password, default_specs.password);
+  sensor.RESPONSE_TIME = default_specs.RESPONSE_TIME;
+  sensor.HMAX = default_specs.HMAX;
+  sensor.HMIN = default_specs.HMIN;
+  sensor.NMIN = default_specs.NMIN;
+  sensor.PMIN = default_specs.PMIN;
+  sensor.KMIN = default_specs.KMIN;
 }

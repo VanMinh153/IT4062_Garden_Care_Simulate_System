@@ -102,7 +102,7 @@ typedef struct lamp_t lamp_t;
 //----------------------------------------------
 int genID();
 int get_default_specs(void* dest, int type);
-int reset_default_specs(void* dest, void* default_specs, int type);
+// int reset_default_specs(void* dest, void* default_specs, int type);
 
 //----------------------------------------------
 // Default specs struct

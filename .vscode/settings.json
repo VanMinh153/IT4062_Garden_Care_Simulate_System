@@ -21,6 +21,7 @@
     "limits": "c",
     "*.tcc": "c",
     "typeinfo": "c",
-    "types.h": "c"
+    "types.h": "c",
+    "errno.h": "c"
   }
 }

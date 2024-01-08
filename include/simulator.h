@@ -18,7 +18,14 @@
 #define LAMPING_STATUS_BIT_COUNT 3
 // Source path
 #define DEFAULT_SPECS_SRC "data/default-specs.txt"
-
+//
+struct sensor_data_t {
+  int humidity; // 0-100%
+  int nitrogen;     // 0-2000 mg/kg
+  int phosphorus;   // 0-2000 mg/kg
+  int potassium;    // 0-2000 mg/kg
+}
+typedef struct sensor_data_t sensor_data_t;
 // Environmental sensors measure humidity and concentrations of nutrients nitrogen (N), phosphorus (P), and potassium (K) in the soil. The sensors record data every T minutes.
 struct sensor_t {
   int id;
@@ -27,16 +34,16 @@ struct sensor_t {
   char status;
 // 0: default
 // 1: modified
-  unsigned int RESPONSE_TIME; // 1-100 second
+  int RESPONSE_TIME; // 1-100 second
   int humidity; // 0-100%
   int HMAX;
   int HMIN;
-  unsigned int nitrogen;    // 0-2000 mg/kg
-  unsigned int NMIN;
-  unsigned int phosphorus;  // 0-2000 mg/kg
-  unsigned int PMIN;
-  unsigned int potassium;   // 0-2000 mg/kg
-  unsigned int KMIN;
+  int nitrogen;    // 0-2000 mg/kg
+  int NMIN;
+  int phosphorus;  // 0-2000 mg/kg
+  int PMIN;
+  int potassium;   // 0-2000 mg/kg
+  int KMIN;
 };
 typedef struct sensor_t sensor_t;
 
@@ -49,7 +56,7 @@ struct watering_t {
 // perform as bits
 // 0000: not linked, timer off, default, stopped
 // 1111: linked, timer on, modified, running
-  unsigned int water_mount;  // liter
+  int water_mount;  // liter
   char timer[TIMER_COUNT][4];
 // timer[i] = "abcd" : "ab" is hour, "cd" is minute
   int sensor_id;
@@ -66,10 +73,10 @@ struct fertilizing_t {
 // perform as bits
 // 0000: not linked, timer off, default, stopped
 // 1111: linked, timer on, modified, running
-  unsigned int N_mount; // 0-1000 gram/lit
-  unsigned int P_mount; // 0-1000 gram/lit
-  unsigned int K_mount; // 0-1000 gram/lit
-  unsigned int water_mount;  // 0-100 liter
+  int N_mount; // 0-1000 gram/lit
+  int P_mount; // 0-1000 gram/lit
+  int K_mount; // 0-1000 gram/lit
+  int water_mount;  // 0-100 liter
   char timer[TIMER_COUNT][4];
 // timer[i] = "abcd" : "ab" is hour, "cd" is minute
   int sensor_id;
@@ -81,7 +88,7 @@ struct lamp_timer_t {
   char time_start[4];
 // timer[i] = "abcd" : "ab" is hour, "cd" is minute
   char time_end[4];
-  unsigned int power; // 0 is setting to use current power
+  int power; // 0 is setting to use current power
 };
 
 // Photosynthesis support lamp part: glows with power P according to the time scheduled by the user.
@@ -93,20 +100,16 @@ struct lamp_t {
 // perform as bits
 // 000: timer off, default, stopped
 // 111: timer on, modified, running
-  unsigned int power; // 5-200 watt
-  unsigned int time; // 1-1000 minute, -1 is infinite
+  int power; // 5-200 watt
+  int time; // 1-1000 minute, -1 is infinite
   struct lamp_timer_t timer[TIMER_COUNT];
 };
 typedef struct lamp_t lamp_t;
 
 //----------------------------------------------
 int genID();
-int get_default_specs(void* dest, int type);
 int check_sensor_specs(int RESPONSE_TIME, int HMAX, int HMIN, int NMIN, int PMIN, int KMIN);
 
-// int reset_default_specs(void* dest, void* default_specs, int type);
-
 //----------------------------------------------
-// Default specs struct
 
 #endif // SIMULATOR_H

@@ -3,7 +3,7 @@
 #ifndef TCP_SOCKET_H
 #define TCP_SOCKET_H
 
-#define CONNECT_MSG "IT4062"
+#define DEFAULT_PORT 48048
 #define BACKLOG 20
 #define MSG_SIZE 2048   // Size of string message
 #define DELIMITER "\r\n"
@@ -108,7 +108,7 @@ struct connection_t {
   unsigned int port;
   int connfd;
   int connCtrl_idx;
-  bool hasLogin;
+  bool logged;
 };
 typedef struct connection_t connection_t;
 bool send_msg(char* msg, int connfd);

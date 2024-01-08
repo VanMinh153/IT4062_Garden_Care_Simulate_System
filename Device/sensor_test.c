@@ -190,7 +190,6 @@ void* handle_thread(void* arg) {
 */
 int handle_msg(char* msg, connection_t* p_conninfo) {
   connection_t conninfo = *p_conninfo;
-  bool hasLogin = conninfo.hasLogin;
   int connfd = conninfo.connfd;
   char password[PASSWORD_LEN + 1];
   char command[COMMAND_LEN + 1];
@@ -203,37 +202,60 @@ int handle_msg(char* msg, connection_t* p_conninfo) {
   memset(password, 0, PASSWORD_LEN + 1);
   snprintf(type_of_msg, sizeof(type_of_msg), "%%%ds", COMMAND_LEN);
   sscanf(msg, type_of_msg, command);
-  // handle the LOGIN command
-  // LOGIN <password>
+  if (conninfo.hasLogin == false && strcmp(command, "LOGIN") != 0) {
+    send_msg(NOT_LOGGED_IN, connfd);
+    return 1;
+  }
+// LOGIN <password>
+// > 110 // LOGIN_SUCCESS
+// > 100 // LOGGED_IN
+// > 201 // PASSWORD_INCORRECT
   if (strcmp(command, "LOGIN") == 0) {
+    if (conninfo.hasLogin == true) {
+      send_msg(LOGGED_IN, connfd);
+      return 1;
+    }
     snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%%ds%%c", PASSWORD_LEN);
     retval = sscanf(msg, type_of_msg, password, overcheck);
-
     if (retval != 1) {
       send_msg(MSG_NOT_DETERMINED, connfd);
       return 1;
     }
-    if (hasLogin == false) {
-      send_msg(LOGGED_IN, connfd);
-      return 1;
-    }
     if (strcmp(password, sensor.password) == 0) {
       p_conninfo->hasLogin = true;
-      hasLogin = true;
       send_msg(LOGIN_SUCCESS, connfd);
       return 0;
     } else {
       send_msg(PASSWORD_INCORRECT, connfd);
       return 1;
     }
-  
-  // handle the PASSWD command
-  // PASSWD <old_password> <new_password>
+// SSID <new_ssid>
+// > 120 // SSID_CHANGE_SUCCESS
+// > 220 // INVALID_SSID
+  } else if (strcmp(command, "SSID") == 0) {
+    char new_ssid[SSID_LEN + 1];
+    snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%%ds%%c", SSID_LEN);
+    retval = sscanf(msg, type_of_msg, new_ssid, overcheck);
+    if (retval != 1) {
+      send_msg(MSG_NOT_DETERMINED, connfd);
+      return 1;
+    }
+    if (strcmp(new_ssid, sensor.ssid) == 0) {
+      send_msg(SSID_CHANGE_SUCCESS, connfd);
+      return 0;
+    } else {
+      send_msg(INVALID_SSID, connfd);
+      return 1;
+    }
+// PASSWD <old_password> <new_password>
+// > 121 // PASSWORD_CHANGE_SUCCESS
+// > 221 // INVALID_PASSWORD
+// > 201 // PASSWORD_INCORRECT
   } else if (strcmp(command, "PASSWD") == 0) {
     char new_password[PASSWORD_LEN + 1];
     snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%%ds %%%ds%%c", PASSWORD_LEN, PASSWORD_LEN);
     retval = sscanf(msg, type_of_msg, password, new_password, overcheck);
-    if (retval != 1) {
+    if (retval != 2) {
       send_msg(MSG_NOT_DETERMINED, connfd);
       return 1;
     }
@@ -245,10 +267,43 @@ int handle_msg(char* msg, connection_t* p_conninfo) {
       send_msg(PASSWORD_INCORRECT, connfd);
       return 1;
     }
-
-  // handle the BYE command
-  } else if (strcmp(command, "BYE") == 0) {
+// RESET <password>
+// > 190 // RESET_TO_DEFAULT
+// > 201 // PASSWORD_INCORRECT
+  } else if (strcmp(command, "RESET") == 0) {
+    snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%%ds%%c", PASSWORD_LEN);
+    retval = sscanf(msg, type_of_msg, password, overcheck);
+    if (retval!= 1) {
+      send_msg(MSG_NOT_DETERMINED, connfd);
+      return 1;
+    }
+    if (strcmp(password, sensor.password) == 0) {
+      memset(sensor.password, 0, PASSWORD_LEN);
+      send_msg(RESET_TO_DEFAULT, connfd);
+      return 0;
+    } else {
+      send_msg(PASSWORD_INCORRECT, connfd);
+      return 1;
+    }
   }
+
+// //----------------------------------------------------------------
+// // Sensor's command
+// GET
+// > 150 <status> <humidity> <nitrogen> <phosphorus> <potassium> <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN> // GET_SUCCESS
+// SET <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
+// > 171 // SET_SENSOR_SUCCESS
+// > 203 // INVALID_ARGS
+// // simulation command
+// UPDATE HUMID
+// > 400 // UPDATE_SUCCESS
+// // setup
+// UPDATE NPK
+// > 400 // UPDATE_SUCCESS
+// // humidity += (100-humidity)*0.5;
+// WRITE <humidity> <nitrogen> <phosphorus> <potassium>
+// > 401 // WRITE_SUCCESS
+
 }
 // int handle_connect(int connfd, int* p_id, char* p_ssid) {
 //   unsigned int id;

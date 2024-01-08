@@ -10,7 +10,7 @@
 #define DELIMITER_LEN 2
 #define DELIMITER_SIZE 3
 #define COMMAND_LEN 16    // Max length of command
-
+#define CTRL_LOOP 5
 // Protocol design
 #define LOGGED_IN "100"
 #define SENSOR_CONNECTED "101"

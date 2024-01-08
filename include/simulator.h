@@ -102,6 +102,8 @@ typedef struct lamp_t lamp_t;
 //----------------------------------------------
 int genID();
 int get_default_specs(void* dest, int type);
+int check_sensor_specs(int RESPONSE_TIME, int HMAX, int HMIN, int NMIN, int PMIN, int KMIN);
+
 // int reset_default_specs(void* dest, void* default_specs, int type);
 
 //----------------------------------------------

@@ -1,11 +1,11 @@
 CC = gcc
 #CFLAGS = -Wall -pthread -I./include -Wno-unused-variable -std=c11
 CFLAGS = -Wall -pthread
-PROGRAM = sensor wateringmc npkmc lamp client
+PROGRAM = sensor watering fertilizing lamp client
 DEVICE_DIR = Device
 CLIENT_DIR = Client
 DEPS = simulate.h utility.h tcp_socket.h session.h
-OBJ = include/simulate.o include/utility.o include/tcp_socket.o include/session.o
+OBJ = include/simulator.o include/utility.o include/tcp_socket.o include/session.o
 
 SUPPORT = test multi sync
 OTHER = menu_1
@@ -15,16 +15,27 @@ all: clean $(PROGRAM)
 #---------------------------------
 sensor: $(DEVICE_DIR)/sensor.o $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
-wateringmc: $(DEVICE_DIR)/wateringmc.o $(OBJ)
+watering: $(DEVICE_DIR)/watering.o $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
-npkmc: $(DEVICE_DIR)/npkmc.o $(OBJ)
+fertilizing: $(DEVICE_DIR)/fertilizing.o $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 lamp: $(DEVICE_DIR)/lamp.o $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 client: $(CLIENT_DIR)/client.o $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
+#---------------------------------
+sensor_test: $(DEVICE_DIR)/sensor_test.o $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS)
+watering_test: $(DEVICE_DIR)/watering_test.o $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS)
+fertilizing_test: $(DEVICE_DIR)/fertilizing_test.o $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS)
+lamp_test: $(DEVICE_DIR)/lamp_test.o $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS)
 
+client_test: $(CLIENT_DIR)/client_test.o $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS)
 #---------------------------------
 multi: select_server.c
 	$(CC) -o $@ $^ $(CFLAGS)

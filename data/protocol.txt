@@ -98,8 +98,7 @@ SET <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
 // simulation command
 UPDATE HUMID
 > 400 // UPDATE_SUCCESS
-// setup
-UPDATE NPK
+UPDATE NPK+
 > 400 // UPDATE_SUCCESS
 // humidity += (100-humidity)*0.5;
 WRITE <humidity> <nitrogen> <phosphorus> <potassium>

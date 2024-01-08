@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
     unsigned int id;
     char ssid[SSID_LEN + 1];
     char command[COMMAND_LEN + 1];
-    char type_of_msg[21];
+    char type_of_msg[31];
     char overcheck = '\0';
 
     if (numConnect >= CONNECTION_MAX) {
@@ -194,7 +194,7 @@ int handle_msg(char* msg, connection_t* p_conninfo) {
   int connfd = conninfo.connfd;
   char password[PASSWORD_LEN + 1];
   char command[COMMAND_LEN + 1];
-  char type_of_msg[21];
+  char type_of_msg[41];
   char overcheck = '\0';
   int retval = -1;
 
@@ -296,6 +296,8 @@ int handle_msg(char* msg, connection_t* p_conninfo) {
     send_msg(sensor_data, connfd);
     return 1;
 // SET <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
+// > 171 // SET_SENSOR_SUCCESS
+// > 203 // INVALID_ARGS
   } else if (strcmp(command, "SET") == 0) {
     unsigned int RESPONSE_TIME, HMAX, HMIN, NMIN, PMIN, KMIN;
     snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%u %%u %%u %%u %%u %%u%%c");
@@ -317,17 +319,55 @@ int handle_msg(char* msg, connection_t* p_conninfo) {
     sensor.KMIN = KMIN;
     send_msg(SET_SENSOR_SUCCESS, connfd);
     return 0;
-// > 171 // SET_SENSOR_SUCCESS
-// > 203 // INVALID_ARGS
 // // simulation command
 // UPDATE HUMID
 // > 400 // UPDATE_SUCCESS
-// // setup
-// UPDATE NPK
+// UPDATE NPK+
 // > 400 // UPDATE_SUCCESS
 // // humidity += (100-humidity)*0.5;
+  } else if (strcmp(command, "UPDATE") == 0) {
+    char cmd_arg[6];
+    snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%%ds%%c", 5);
+    retval = sscanf(msg, type_of_msg, cmd_arg, overcheck);
+    if (retval != 1) {
+      send_msg(MSG_NOT_DETERMINED, connfd);
+      return 1;
+    }
+    if (strcmp(cmd_arg, "HUMID") == 0) {
+      for (int i = 0; i < CTRL_LOOP; i++) {
+        sensor.humidity = sensor.HMAX;
+      }
+      send_msg(UPDATE_SUCCESS, connfd);
+      return 0;
+    } else if (strcmp(cmd_arg, "NPK+") == 0) {
+      for (int i = 0; i < CTRL_LOOP; i++) {
+        sensor.humidity += (100 - sensor.humidity)*0.5;
+        sensor.nitrogen = sensor.NMIN;
+        sensor.phosphorus = sensor.PMIN;
+        sensor.potassium = sensor.KMIN;
+      }
+      send_msg(UPDATE_SUCCESS, connfd);
+      return 0;
+    } else {
+      send_msg(UNKNOWN_COMMAND, connfd);
+      return 1;
+    }
 // WRITE <humidity> <nitrogen> <phosphorus> <potassium>
 // > 401 // WRITE_SUCCESS
+  } else if (strcmp(command, "WRITE") == 0) {
+    unsigned int humidity, nitrogen, phosphorus, potassium;
+    snprintf(type_of_msg, sizeof(type_of_msg), "%%*s %%u %%u %%u %%u%%c");
+    retval = sscanf(msg, type_of_msg, &humidity, &nitrogen, &phosphorus, &potassium, overcheck);
+    if (retval != 4) {
+      send_msg(MSG_NOT_DETERMINED, connfd);
+      return 1;
+    }
+    sensor.humidity = humidity;
+    sensor.nitrogen = nitrogen;
+    sensor.phosphorus = phosphorus;
+    sensor.potassium = potassium;
+    send_msg(WRITE_SUCCESS, connfd);
+    return 0;
   } else {
     send_msg(UNKNOWN_COMMAND, connfd);
     return 1;

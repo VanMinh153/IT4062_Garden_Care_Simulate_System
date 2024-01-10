@@ -39,9 +39,9 @@ int genID() {
 
 // int get_device_info ();
 
-int main() {
-  for (int i = 0; i < 20; i++) {
-    printf("%d : %d\n", i + 1, genID());
-  }
-  return 0;
-}
+// int main() {
+//   for (int i = 0; i < 20; i++) {
+//     printf("%d : %d\n", i + 1, genID());
+//   }
+//   return 0;
+// }

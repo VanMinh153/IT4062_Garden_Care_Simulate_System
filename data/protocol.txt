@@ -91,8 +91,8 @@ RESET <password>
 //----------------------------------------------------------------
 // Sensor's command
 GET
-> 150 <status> <humidity> <nitrogen> <phosphorus> <potassium> <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN> // GET_SUCCESS
-SET <RESPONSE_TIME> <HMAX> <HMIN> <NMIN> <PMIN> <KMIN>
+> 150 <status> <response_time>// GET_SUCCESS
+SET <response_time>
 > 171 // SET_SENSOR_SUCCESS
 > 203 // INVALID_ARGS
 // simulation command
@@ -107,8 +107,8 @@ WRITE <humidity> <nitrogen> <phosphorus> <potassium>
 //----------------------------------------------------------------
 // Watering machine's command
 GET
-> 150 <status> <water_mount> <list-of-timer> ... // GET_SUCCESS
-SET <water_mount>
+> 150 <status> <water_mount> <HMAX> <HMIN> <list-of-timer> ... // GET_SUCCESS
+SET <water_mount> <HMAX> <HMIN>
 > 172 // SET_WATERING_SUCCESS
 > 203 // INVALID_ARGS
 ADD_T <TIME>
@@ -124,8 +124,8 @@ REMOVE_T <TIME>
 //----------------------------------------------------------------
 // Fertilizing machine's command
 GET
-> 150 <status> <N_mount> <P_mount> <K_mount> <water_mount> <list-of-timer> ... // GET_SUCCESS
-SET <N_mount> <P_mount> <K_mount> <water_mount>
+> 150 <status> <water_mount> <N_mount> <P_mount> <K_mount> <NMIN> <PMIN> <KMIN> <list-of-timer> ... // GET_SUCCESS
+SET <N_mount> <water_mount> <P_mount> <K_mount> <NMIN> <PMIN> <KMIN>
 > 173 // SET_FERTILIZING_SUCCESS
 > 203 // INVALID_ARGS
 ADD_T <TIME>

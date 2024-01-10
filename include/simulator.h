@@ -34,16 +34,11 @@ struct sensor_t {
   char status;
 // 0: default
 // 1: modified
-  int RESPONSE_TIME; // 1-100 second
+  int response_time; // 1-100 second
   int humidity; // 0-100%
-  int HMAX;
-  int HMIN;
   int nitrogen;    // 0-2000 mg/kg
-  int NMIN;
   int phosphorus;  // 0-2000 mg/kg
-  int PMIN;
   int potassium;   // 0-2000 mg/kg
-  int KMIN;
 };
 typedef struct sensor_t sensor_t;
 
@@ -52,6 +47,8 @@ struct watering_t {
   int id;
   char ssid[SSID_LEN + 1];
   char password[PASSWORD_LEN + 1];
+  int HMAX;
+  int HMIN;
   char status;
 // perform as bits
 // 0000: not linked, timer off, default, stopped
@@ -73,6 +70,9 @@ struct fertilizing_t {
 // perform as bits
 // 0000: not linked, timer off, default, stopped
 // 1111: linked, timer on, modified, running
+  int NMIN; // 0-2000 mg/kg
+  int PMIN; // 0-2000 mg/kg
+  int KMIN; // 0-2000 mg/kg
   int N_mount; // 0-1000 gram/lit
   int P_mount; // 0-1000 gram/lit
   int K_mount; // 0-1000 gram/lit

@@ -88,7 +88,7 @@ int get_msg(int connfd, char* message, char* recv_buffer) {
   return -1;
 }
 //****************************************************************
-int get_msg_t(int connfd, char* message, char* recv_buffer) {
+int get_msg_t(int connfd, char* message, char* recv_buffer, int timeout) {
 	char recv_data[MSG_SIZE], recv_msg[MSG_SIZE];
   int received_bytes;
   recv_data[0] = '\0';

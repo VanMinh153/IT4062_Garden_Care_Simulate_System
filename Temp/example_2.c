@@ -8,11 +8,18 @@ struct type1 {
   char str[100];
 };
 typedef struct type1 type1;
+
+type1 var1[10];
+
+void func1(type1* var) {
+  printf("func1 $ %ld\n", var - var1);
+  printf("func1 $ %ld\n", var - &var1[0]);
+}
 int main() {
-  type1 var1[10];
   type1* var2 = &var1[5];
   
-  printf("%ld\n", var2 - var1);
+  printf("main $ %ld\n", var2 - var1);
+  func1(var2);
 
   // var1.x = 1;
   // var1.str[0] = 'a';

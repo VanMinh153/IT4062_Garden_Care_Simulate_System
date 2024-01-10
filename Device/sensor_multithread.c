@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <poll.h>
+//#include <sys/wait.h>
 #include <pthread.h>
 #include <errno.h>
 #include "../include/utility.h"
@@ -14,19 +14,15 @@
 #include "../include/simulator.h"
 
 #define CONNECTION_MAX 1024
-#define TIMEOUT 100 // 100 ms
+#define TIMEOUT 3
 #define CONTROLLER_THREAD "SENSOR_CONTROLLER_THREAD"
-#define DATA_SEND_THREAD "SENSOR_DATA_SEND_THREAD"
 #define PERCENT_CHANGE 99 // 99%
 
 char connCtrl[CONNECTION_MAX];
 connection_t conninfo[CONNECTION_MAX];
 int numConnect = 0; 
-int end_idx = 0;
 sensor_t sensor;
 sensor_t default_specs;
-
-int send_fds[CONNECTION_MAX];
 
 void* handle_thread(void* connfd);
 int handle_msg(char* msg, connection_t* connection);
@@ -42,6 +38,7 @@ int main(int argc, char** argv) {
   char clientIP[INET_ADDRSTRLEN];
   socklen_t sin_size = sizeof(struct sockaddr);
   pthread_t tid;
+  char recv_msg[MSG_SIZE], recv_buffer[MSG_SIZE];
   int retval = -1;
 
   memset(connCtrl, 0, CONNECTION_MAX);
@@ -49,6 +46,8 @@ int main(int argc, char** argv) {
   memset(&sensor, 0, sizeof(sensor_t) );
   memset(&default_specs, 0, sizeof(sensor_t) );
   memset(&server, 0, sizeof(server) );
+  memset(recv_msg, 0, MSG_SIZE);
+  memset(recv_buffer, 0, MSG_SIZE);
 
   if (argc != 2) {
     fprintf(stderr, "Please write: ./sensor <ssid> <password>\n");
@@ -79,138 +78,61 @@ int main(int argc, char** argv) {
     perror("\nlisten()");
     exit(EXIT_FAILURE);
   }
-//-------------------------------------------------------------------------------  
+  
   printf("Sensor started!\n");
-  char recv_msg[MSG_SIZE], recv_buffer[MSG_SIZE];
-  char msg[MSG_SIZE];
-  struct pollfd listenfd_poll;
-  struct pollfd fds[CONNECTION_MAX];
-  int ready = 0;
-  memset(recv_msg, 0, MSG_SIZE);
-  memset(recv_buffer, 0, MSG_SIZE);  
-  memset(msg, 0, MSG_SIZE);
-  listenfd_poll.fd = listenfd;
-  listenfd_poll.events = POLLIN;
-  for (int i = 0; i < CONNECTION_MAX; i++) {
-    fds[i].fd = -1;
-    fds[i].events = POLLIN;
-  }
-
   gen_sensor_status();
-  // Create thread to control sensor status
+  // thread to control sensor status
   retval = pthread_create(&tid, NULL, &handle_thread, CONTROLLER_THREAD);
-  if (retval!= 0) perror("\npthread_create()");
-  // Create thread to send sensor's data to client
-  retval = pthread_create(&tid, NULL, &handle_thread, DATA_SEND_THREAD);
-  if (retval!= 0) perror("\npthread_create()");
+  if (retval != 0) perror("\npthread_create()");
 
   // Handle connection
-	int id;
-  char ssid[SSID_LEN + 1];
-  char command[COMMAND_LEN + 1];
-  char type_of_msg[21];
-  char overcheck = '\0';
-  while (1) {
-    
-    if (numConnect == CONNECTION_MAX) {
+	while (1) {
+    int id;
+    char ssid[SSID_LEN + 1];
+    char command[COMMAND_LEN + 1];
+    char type_of_msg[31];
+    char overcheck = '\0';
+
+    if (numConnect >= CONNECTION_MAX) {
       fprintf(stderr, "Error: maximum number of connections exceeded\n");
-    } else {
-      ready = poll(&listenfd_poll, 1, TIMEOUT);
-      if (ready == -1) {
-        perror("\npoll()");
-        return 1;
-      } else if (ready == 1) {
-        connfd = accept(listenfd, (struct sockaddr*) &client, &sin_size);
-        if (connfd == -1) {
-          perror("\naccept()");
-          return 1;
-        }
-        retval = get_msg(connfd, recv_msg, recv_buffer);
-        snprintf(type_of_msg, sizeof(type_of_msg), "%%%ds %%d %%%ds%%c", COMMAND_LEN, SSID_LEN);
-        retval = sscanf(recv_msg, type_of_msg, command, id, ssid, overcheck);
-        if (retval != 3) {
-          send_msg(MSG_NOT_DETERMINED, connfd);
-          return 1;
-        }
-        if (strcmp(command, "CONNECT") != 0) {
-          close(connfd);
-          continue;
-        }
-        for (int i = 0; i < CONNECTION_MAX; i++) {
-          if (connCtrl[i] == 0) {
-            connCtrl[i] = 1;
-            fds[i].fd = connfd;
-            fds[i].events = POLLIN;
-            conninfo[i].id = id;
-            strncpy(conninfo[i].SSID, ssid, SSID_LEN);
-            conninfo[i].ip = client.sin_addr.s_addr;
-            conninfo[i].port = client.sin_port;
-            conninfo[i].connfd = connfd;
-            conninfo[i].logged = false;
-            numConnect++;
-            if (i > end_idx) end_idx = i;
-            break;
-          }
-        }
-      }
+      sleep(3);
+      continue;
     }
-//----------------------------------------------------------------
-// Handle message from client
-    ready = poll(fds, end_idx + 1, TIMEOUT);
-    if (ready == -1) {
-      perror("\npoll()");
+    if ( (connfd = accept(listenfd, (struct sockaddr*) &client, &sin_size) ) == -1) {
+      perror("\naccept()");
       return 1;
-    } else if (ready == 0) {
+    }
+    
+    retval = get_msg(connfd, recv_msg, recv_buffer, TIMEOUT);
+    snprintf(type_of_msg, sizeof(type_of_msg), "%%%ds %%d %%%ds%%c", COMMAND_LEN, SSID_LEN);
+    retval = sscanf(recv_msg, type_of_msg, command, id, ssid, overcheck);
+    if (retval != 3) {
+      send_msg(MSG_NOT_DETERMINED, connfd);
+      return 1;
+    }
+
+    if (strcmp(command, "CONNECT") != 0) {
+      close(connfd);
       continue;
     }
     
-    for (int i = 0; i <= end_idx; i++) {
-      if (connCtrl[i] == 1 && fds[i].revents & POLLIN) {
-        connfd = fds[i].fd;
-        retval = get_msg(connfd, recv_msg, conninfo[i].recv_buffer);
-        if (retval < 0) {
-          if (retval == -3) {
-            fprintf(stderr, "Error: messages received exceed the maximum message size\n");
-            send_msg(MSG_OVERLENGTH, connfd);
-          }
-          close(connfd);
-          connCtrl[i] = 0;
-          numConnect--;
-        } else {
-          handle_msg(recv_msg, &conninfo[i]);
-        }
-      }
-    }
-
-    // optimize connCtrl array
-    if (numConnect == 0) {
-      end_idx = 0;
-      continue;
-    }
-
-    if (connCtrl[end_idx] == 0) {
-      for (int i = end_idx; i >= 0; i--) {
-        if (connCtrl[i] == 1) {
-          end_idx = i;
-          break;
-        }
-      }
-    }
-
-    if (end_idx != numConnect - 1) {
-      for (int i = 0; i <= end_idx; i++) {
-        if (connCtrl[i] == 0) {
-          conninfo[i] = conninfo[end_idx];
-          fds[i].fd = fds[end_idx].fd;
-          connCtrl[end_idx] = 0;
-          connCtrl[i] = 1;
-          for (int j = end_idx; j > i; j--) {
-            if (connCtrl[j] == 1) {
-              end_idx = j;
-              break;
-            }
-          }        
-        }
+    inet_ntop(AF_INET, &client.sin_addr, clientIP, sizeof(clientIP) );
+    // Can print client's IP and client's port here
+    for (int i = 0; i < CONNECTION_MAX; i++) {
+      if (connCtrl[i] == 0) {
+        connCtrl[i] = 1;
+        conninfo[i].id = id;
+        strncpy(conninfo[i].SSID, ssid, SSID_LEN);
+        conninfo[i].ip = client.sin_addr.s_addr;
+        conninfo[i].port = client.sin_port;
+        conninfo[i].connfd = connfd;
+        conninfo[i].connCtrl_idx = i;
+        conninfo[i].logged = false;
+        // numConnect++;
+        retval = pthread_create(&tid, NULL, &handle_thread, &conninfo[i]);
+        if (retval != 0) perror("\npthread_create()");
+        // printf("Number of connection: %d\n", numConnect);
+        break;
       }
     }
   }
@@ -224,75 +146,40 @@ int main(int argc, char** argv) {
 */
 void* handle_thread(void* arg) {
   pthread_detach(pthread_self());
-  if (strcmp(arg,CONTROLLER_THREAD) == 0) {
+  if (strcmp((char*) arg, CONTROLLER_THREAD) == 0) {
     while (1) {
       ctrl_sensor_status();
-      sleep(1);
+      sleep(3);
     }
-  } else if (strcmp(arg, DATA_SEND_THREAD) == 0) {
-    while (1) {
-      int listenfd, connfd;
-      struct sockaddr_in server, client;
-      char clientIP[INET_ADDRSTRLEN];
-      socklen_t sin_size = sizeof(struct sockaddr);
-      pthread_t tid;
-      int retval = -1;
-      memset(&server, 0, sizeof(server) );
-      
-      if ( (listenfd = socket(AF_INET, SOCK_STREAM, 0) ) == -1 ) {
-        perror("\nsocket()");
-        exit(EXIT_FAILURE);
-      }
-      server.sin_family = AF_INET;
-      server.sin_port = htons(SENSOR_DATA_PORT);
-      server.sin_addr.s_addr = htonl(INADDR_ANY);
+  }
 
-      if (bind(listenfd, (struct sockaddr*) &server, sizeof(server) ) == -1) {
-        perror("\nbind()");
-        exit(EXIT_FAILURE);
-      }
-      if (listen(listenfd, BACKLOG) == -1) {
-        perror("\nlisten()");
-        exit(EXIT_FAILURE);
-      }
-    //-------------------------------------------------------------------------------  
-      char msg[MSG_SIZE];
-      int ip = 0;
-      int check = 0;
-      struct pollfd listenfd_poll;
-      listenfd_poll.fd = listenfd;
-      listenfd_poll.events = POLLIN;
-      int ready = 0;
-      memset(msg, 0, MSG_SIZE);
+  connection_t* p_conninfo = (connection_t*) arg;
+  connection_t conninfo = *( (connection_t*) arg);
+  int connfd = conninfo.connfd;
+  char recv_msg[MSG_SIZE], recv_buffer[MSG_SIZE];
+  char msg[MSG_SIZE];
+  memset(recv_msg, 0, MSG_SIZE);
+  memset(recv_buffer, 0, MSG_SIZE);
+  memset(msg, 0, MSG_SIZE);
+  int retval = -1;
 
-      ready = poll(&listenfd_poll, 1, TIMEOUT);
-      if (ready == -1) {
-        perror("\npoll()");
-      } else if (ready == 1) {
-        connfd = accept(listenfd, (struct sockaddr*) &client, &sin_size);
-        if (connfd == -1) {
-          perror("\naccept()");
-        }
-        ip = client.sin_addr.s_addr;
-        for (int i = 0; i <= end_idx; i++) {
-          if (connCtrl[i] == 2 && ip == conninfo[i].ip) {
-            send_fds[i] = connfd;
-            connCtrl[i] = 3;
-            check = 1;
-            break;
-          }
-        }
-        if (check == 0) close(connfd);
+  snprintf(msg, MSG_SIZE, "%s %d %s", SENSOR_CONNECTED, sensor.id, sensor.ssid);
+  send_msg(msg, connfd);
+  
+  while (1) {
+    retval = get_msg(connfd, recv_msg, recv_buffer, 0);
+    if (retval < 0) {
+      if (retval == -3) {
+        fprintf(stderr, "Error: messages received exceed the maximum message size\n");
+        fprintf(stderr, "Notice: message length is limited to %d characters\n", MSG_SIZE);
+        send_msg(MSG_NOT_DETERMINED, connfd);
+      } else {
+        close(connfd);
+        connCtrl[conninfo.connCtrl_idx] = 0;
+        pthread_exit(NULL);
       }
-
-      for (int i = 0; i <= end_idx; i++) {
-        if(connCtrl[i] == 3) {
-          snprintf(msg, sizeof(msg), "%u %u %u %u", sensor.humidity, sensor.nitrogen, sensor.phosphorus, sensor.potassium);
-          send_msg(msg, send_fds[i]);
-        }
-      }
-      sleep(sensor.RESPONSE_TIME);
     }
+    handle_msg(recv_msg, p_conninfo);
   }
 }
 /*
@@ -336,7 +223,6 @@ int handle_msg(char* msg, connection_t* p_conninfo) {
     }
     if (strcmp(password, sensor.password) == 0) {
       p_conninfo->logged = true;
-      connCtrl[p_conninfo - conninfo] = 2;
       send_msg(LOGIN_SUCCESS, connfd);
       return 0;
     } else {

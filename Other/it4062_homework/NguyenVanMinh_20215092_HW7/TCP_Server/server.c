@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
   numAccount = read_account(accounts);
   printf("Information of %d accounts have been read successful\n", numAccount);
 
-  struct pollfd pfd;
+  struct pollfd listenfd_poll;
   session_t* sessfd[CLIENT_MAX];
   struct pollfd fds[CLIENT_MAX];
   int nfds = 0;
@@ -87,8 +87,8 @@ int main(int argc, char** argv) {
   session_t sessInfo;
   int id = 0;
 
-  pfd.fd = listenfd;
-  pfd.events = POLLIN;
+  listenfd_poll.fd = listenfd;
+  listenfd_poll.events = POLLIN;
 
   for (int i = 0; i < CLIENT_MAX; i++) {
     fds[i].fd = -1;
@@ -97,13 +97,13 @@ int main(int argc, char** argv) {
 
   while (1) {
     while (1) {
-      retval = poll(&pfd, 1, TIME_OUT);
+      retval = poll(&listenfd_poll, 1, TIME_OUT);
       if (retval == -1) {
         perror("\npoll()1");
         return 1;
       }
 
-      if (pfd.revents & POLLIN) {
+      if (listenfd_poll.revents & POLLIN) {
         for (id = 0; id <= CLIENT_MAX; id++)
           if (fds[id].fd == -1) break;
 

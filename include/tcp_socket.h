@@ -3,7 +3,8 @@
 #ifndef TCP_SOCKET_H
 #define TCP_SOCKET_H
 
-#define DEFAULT_PORT 48048
+#define DEFAULT_PORT 49000
+#define SENSOR_DATA_PORT 49001
 #define BACKLOG 20
 #define MSG_SIZE 2048   // Size of string message
 #define DELIMITER "\r\n"
@@ -107,22 +108,19 @@ struct connection_t {
   unsigned int ip;
   unsigned int port;
   int connfd;
-  int connCtrl_idx;
+  // int connCtrl_idx;
   bool logged;
+  char recv_buffer[MSG_SIZE];
 };
 typedef struct connection_t connection_t;
 bool send_msg(char* msg, int connfd);
 
-int get_msg(int connfd, char* message, char* recv_buffer, int timeout);
-
+int get_msg(int connfd, char* message, char* recv_buffer);
+int get_msg_t(int connfd, char* message, char* recv_buffer, int timeout);
 char* str_to_msg(char* msg_code);
-
 bool print_msg(char* msg_code);
-
 int echo_server(int connfd);
-
 int echo_client(int connfd);
-
 void *echo_thread(void* connfd);
 
 #endif // TCP_SOCKET_H

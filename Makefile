@@ -4,6 +4,7 @@ CFLAGS = -Wall -pthread
 PROGRAM = sensor watering fertilizing lamp client
 DEVICE_DIR = Device
 CLIENT_DIR = Client
+EX_DIR = Temp
 DEPS = simulate.h utility.h tcp_socket.h session.h
 OBJ = include/simulator.o include/utility.o include/tcp_socket.o include/session.o
 
@@ -50,21 +51,21 @@ test: hw7_tcp_test.c
 	$(CC) -o $@ $^ $(CFLAGS)
 
 #---------------------------------
-ex1: Example_1.c
+ex1: $(EX_DIR)/example_1.c
 	$(CC) -o $@ $^ $(CFLAGS)
-ex2: Example_2.c
+ex2: $(EX_DIR)/example_2.c
 	$(CC) -o $@ $^ $(CFLAGS)
-ex3: Example_3.c
+ex3: $(EX_DIR)/example_3.c
 	$(CC) -o $@ $^ $(CFLAGS)
-ex4: Example_4.c
+ex4: $(EX_DIR)/example_4.c
 	$(CC) -o $@ $^ $(CFLAGS)
-ex5: Example_5.c
+ex5: $(EX_DIR)/example_5.c
 	$(CC) -o $@ $^ $(CFLAGS)
-ex6: Example_6.c
+ex6: $(EX_DIR)/example_6.c
 	$(CC) -o $@ $^ $(CFLAGS)
-ex7: Example_7.c
+ex7: $(EX_DIR)/example_7.c
 	$(CC) -o $@ $^ $(CFLAGS)
-ex8: Example_8.c
+ex8: $(EX_DIR)/example_8.c
 	$(CC) -o $@ $^ $(CFLAGS)
 
 %.o: %.c $(DEPS)
@@ -72,4 +73,4 @@ ex8: Example_8.c
 
 #---------------------------------
 clean:
-	rm -f *.o ex* Example_? $(DEVICE_DIR)/*.o $(CLIENT_DIR)/*.o include/*.o $(PROGRAM) $(SUPPORT) $(OTHER)
+	rm -f *.o ex* $(EX_DIR)/example_? $(DEVICE_DIR)/*.o $(CLIENT_DIR)/*.o include/*.o $(PROGRAM) $(SUPPORT) $(OTHER)

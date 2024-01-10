@@ -24,7 +24,7 @@ struct sensor_data_t {
   int nitrogen;     // 0-2000 mg/kg
   int phosphorus;   // 0-2000 mg/kg
   int potassium;    // 0-2000 mg/kg
-}
+};
 typedef struct sensor_data_t sensor_data_t;
 // Environmental sensors measure humidity and concentrations of nutrients nitrogen (N), phosphorus (P), and potassium (K) in the soil. The sensors record data every T minutes.
 struct sensor_t {

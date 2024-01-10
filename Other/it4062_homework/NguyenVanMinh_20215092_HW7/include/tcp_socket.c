@@ -33,7 +33,7 @@ bool send_msg(char* message, int connfd) {
   return true;
 }
 /*
-@function: receive 1 message from connfdet
+@function: receive 1 message from connfd
 @parameter [IN] connfd: socket connects to server
            [IN] recv_buffer: save remaining data after receiving message
            [OUT] message: save message have been received
